@@ -4,6 +4,7 @@ const Founder = require("../models/Founder");
 const Meeting = require("../models/Meeting");
 const multer = require('multer');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const User = require('../models/User'); // ADD THIS LINE: Import the User model
 
 // Initialize Gemini API
 const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
@@ -117,7 +118,7 @@ const createFounder = async (req, res) => {
 const getFounder = async (req, res) => {
   try {
     const founder = await Founder.findOne({ name: req.params.name });
-    
+
 
     if (!founder) {
       return res.status(404).json({ message: "Founder not found" });
@@ -263,7 +264,7 @@ const analyzeBills = async (req, res) => {
     const prompt = `
       Analyze this utility bill image and extract key information.
       The user has ${userData.family_size} family members in ${userData.region}, India.
-      
+
       Return ONLY a valid JSON object with these exact fields:
       {
         "bill_type": "electricity|water|gas",
@@ -295,14 +296,14 @@ const analyzeBills = async (req, res) => {
           "unit": "string"
         }
       }
-      
+
       Do not include any additional text or explanations. Only return the JSON object.
-      
+
       Make sure your assessment is accurate and based on typical usage patterns in India.
       For electricity bills: Consider 75 kWh/month/person as average in India.
       For water bills: Consider 4000 liters/month/person as average in India.
       For gas bills: Consider 1 cylinder/month for a family of 4 as average in India.
-      
+
       Adjust for seasonal factors appropriately (e.g., higher electricity use in summer is expected).
     `;
 
@@ -344,22 +345,22 @@ const analyzeBills = async (req, res) => {
         }
       })
     );
-    
-    // try {
-    //   const user = await User.findById("67c328812878b9b80182d205");
-    //   if (!user) {
-    //     return res.status(404).json({ error: 'User not found' });
-    //   }
-    //   user.analysisResults.push(...analysisResults); // Append new results to the existing array
-    //   await user.save(); // Save the updated user document
-    //   console.log('User document updated successfully');
-    // } catch (error) {
-    //   console.error('Error saving user document:', error);
-    //   return res.status(500).json({ error: 'Failed to save analysis results', details: error.message });
-    // } finally {
-    //   console.log('completed');
-    // }
-    
+
+    try {
+      const user = await User.findById("67c328812878b9b80182d205");
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      user.analysisResults.push(...analysisResults); // Append new results to the existing array
+      await user.save(); // Save the updated user document
+      console.log('User document updated successfully');
+    } catch (error) {
+      console.error('Error saving user document:', error);
+      return res.status(500).json({ error: 'Failed to save analysis results', details: error.message });
+    } finally {
+      console.log('completed');
+    }
+
 
     // Return the results as an array of objects
     res.json(analysisResults);
