@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StatusBar,
   TouchableOpacity,
+  TouchableHighlight,
   Modal,
   Alert
 } from 'react-native';
@@ -18,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Calendar } from 'react-native-calendars';
 import LineChartComponent from '@/components/LineChart';
 import ProjectCarousel from '@/components/ProjectCarousel';
+import { router } from 'expo-router';
 
 // Updated color scheme
 const COLORS = {
@@ -94,9 +96,11 @@ export default function Home() {
               <Text className="text-white/80 text-xl font-pmedium tracking-wide mt-6">Welcome Back!</Text>
               <Text className="text-white text-2xl font-pbold tracking-wide mt-1">Deep</Text>
             </View>
-            <View className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 items-center justify-center">
+            <TouchableHighlight 
+              onPress={() => router.push('../userpage')}
+              className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 items-center justify-center">
               <Text className="text-white text-lg font-semibold">IN</Text>
-            </View>
+            </TouchableHighlight>
           </View>
 
           {/* Stats Cards */}
