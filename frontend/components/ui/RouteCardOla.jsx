@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import CarbonSave from "../carbonsave";
 
-const RouteCard = ({ id, route }) => {
+const RouteCardOla = ({ route }) => {
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
 
@@ -16,23 +16,48 @@ const RouteCard = ({ id, route }) => {
     SUBWAY: <FontAwesome5 name="subway" size={22} color="#00b890" />,
   };
 
-  const totalTimeInSeconds = route.duration;
-  const totalTimeInMinutes = Math.round(totalTimeInSeconds / 60);
+  const { legs, overview_polyline } = route.routes[0];
+  console.log(legs);
+  const totalDistance = legs.reduce((sum, leg) => sum + leg.distance, 0);
+  const carbonValue = (0.192 * totalDistance) / 1000;
+  const totalDuration = legs.reduce((sum, leg) => sum + leg.duration, 0);
+
   const reachByTime = new Date(
-    Date.now() + totalTimeInSeconds * 1000
+    Date.now() + totalDuration * 1000
   ).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
 
-  const legTimes = route.legs.map((leg) => {
-    const startTime = new Date(leg.startTime);
-    const endTime = new Date(leg.endTime);
-    return {
-      mode: leg.mode,
-      timeInMinutes: Math.round((endTime - startTime) / 60000),
-    };
-  });
+  const calculateCabFare = (response) => {
+    const baseFare = 50;
+    const costPerKm = 12;
+    const totalDistanceMeters = response.routes[0].legs[0].distance;
+    const totalDistanceKm = totalDistanceMeters / 1000;
+    const totalFare = baseFare + totalDistanceKm * costPerKm;
+    return Math.round(totalFare);
+  };
+
+  const response = {
+    routes: [
+      {
+        legs: [
+          {
+            distance: 3836,
+          },
+        ],
+      },
+    ],
+  };
+
+  const totalFare = calculateCabFare(route);
+  const legTimes = legs.map((leg) => ({
+    mode: "DRIVE",
+    timeInMinutes: Math.round(leg.duration / 60),
+    readableDistance: leg.readable_distance,
+    instructions: leg.steps.map((step) => step.instructions).join(", "),
+    cost: Number(leg.readable_distance * 15).toFixed(0),
+  }));
 
   const handleScroll = (event) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -75,18 +100,22 @@ const RouteCard = ({ id, route }) => {
           {legTimes.map((leg, index) => (
             <View key={index} className="flex-row items-center">
               <View className="flex items-center">
-                {modeIcons[leg.mode]}
+                {modeIcons[leg.mode] || (
+                  <FontAwesome5 name="car" size={22} color="#00b890" />
+                )}
                 <Text className="text-sm text-gray-300 mt-2 font-medium">
                   {leg.timeInMinutes} min
                 </Text>
               </View>
               {index < legTimes.length - 1 && (
-                <FontAwesome5
-                  name="arrow-right"
-                  size={14}
-                  color="#00b890"
-                  className="mx-4"
-                />
+                <Text>
+                  <FontAwesome5
+                    name="arrow-right"
+                    size={14}
+                    color="#00b890"
+                    className="mx-4"
+                  />
+                </Text>
               )}
             </View>
           ))}
@@ -116,26 +145,28 @@ const RouteCard = ({ id, route }) => {
           <Text className="text-sm text-gray-400">
             Total Duration:{" "}
             <Text className="font-semibold text-md text-primary">
-              {totalTimeInMinutes} min
+              {Math.round(totalDuration / 60)} min
             </Text>
           </Text>
         </View>
-        <CarbonSave value={route.carbonEmission} />
+        <CarbonSave value={Number(carbonValue.toFixed(3)) || 0} />
       </View>
 
       <View className="h-[1px] bg-gray-800 my-3" />
 
       <View className="flex-row justify-between items-center mt-1">
         <Text className="text-md text-gray-300 font-semibold">
-          Fare: <Text className="text-lg font-bold text-primary">₹80</Text>
+          Fare:{" "}
+          <Text className="text-lg font-bold text-primary">
+            ₹{totalFare || "80"}
+          </Text>
         </Text>
         <TouchableHighlight
           onPress={() =>
             router.push({
               pathname: "/(tabs)/travel/mapscreen",
               params: {
-                id: id,
-                route: JSON.stringify(route),
+                overview_polyline,
               },
             })
           }
@@ -162,4 +193,4 @@ const RouteCard = ({ id, route }) => {
   );
 };
 
-export default RouteCard;
+export default RouteCardOla;
