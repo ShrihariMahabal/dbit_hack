@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  Button, 
-  TextInput, 
-  Alert, 
-  Modal, 
-  TouchableOpacity, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  Button,
+  TextInput,
+  Alert,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
   StyleSheet,
   Image
 } from 'react-native';
@@ -116,7 +116,7 @@ const Account = () => {
             <Text style={styles.userEmail}>{userData.email}</Text>
           </View>
         </View>
-        
+
         <View style={styles.profileDetails}>
           <View style={styles.detailItem}>
             <Ionicons name="call-outline" size={20} color="#00b890" />
@@ -134,7 +134,7 @@ const Account = () => {
       </View>
 
       {/* Bill Analysis Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.analyzeButton}
         onPress={() => setModalVisible(true)}
       >
@@ -143,8 +143,10 @@ const Account = () => {
 
       {/* Bill Analysis Results */}
       <View style={styles.billsSection}>
-        <Text style={styles.sectionTitle}>Your Bill Analysis</Text>
-        
+        {(billAnalysis.electricity || billAnalysis.gas) && (
+          <Text style={styles.sectionTitle}>Your Bill Analysis</Text>
+        )}
+
         {/* Electricity Bill Card */}
         {billAnalysis.electricity && (
           <View style={styles.billCard}>
@@ -152,55 +154,55 @@ const Account = () => {
               <Ionicons name="flash-outline" size={24} color="#00b890" />
               <Text style={styles.billCardTitle}>Electricity Bill</Text>
             </View>
-            
+
             <View style={styles.billCardContent}>
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Provider:</Text>
                 <Text style={styles.billValue}>{billAnalysis.electricity.bill_provider}</Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Period:</Text>
                 <Text style={styles.billValue}>{billAnalysis.electricity.billing_period}</Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Consumption:</Text>
                 <Text style={styles.billValue}>
                   {billAnalysis.electricity.consumption.value} {billAnalysis.electricity.consumption.unit}
                 </Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Amount:</Text>
                 <Text style={styles.billValue}>
                   {billAnalysis.electricity.amount.currency} {billAnalysis.electricity.amount.value}
                 </Text>
               </View>
-              
+
               {/* Sustainability Score */}
               <View style={styles.scoreContainer}>
                 <Text style={styles.scoreLabel}>Sustainability Score</Text>
                 <View style={styles.scoreWrapper}>
-                  <View 
+                  <View
                     style={[
-                      styles.scoreIndicator, 
-                      { 
+                      styles.scoreIndicator,
+                      {
                         backgroundColor: getSustainabilityColor(billAnalysis.electricity.sustainability_score),
                         width: `${billAnalysis.electricity.sustainability_score}%`
                       }
-                    ]} 
+                    ]}
                   />
                 </View>
                 <Text style={styles.scoreValue}>{billAnalysis.electricity.sustainability_score}/100</Text>
               </View>
-              
+
               {/* Key Insights */}
               <Text style={styles.insightsTitle}>Key Insights:</Text>
               {billAnalysis.electricity.key_insights.map((insight, index) => (
                 <Text key={index} style={styles.insightText}>• {insight}</Text>
               ))}
-              
+
               {/* Recommendations */}
               <Text style={styles.insightsTitle}>Recommendations:</Text>
               {billAnalysis.electricity.recommendations.map((rec, index) => (
@@ -209,7 +211,7 @@ const Account = () => {
             </View>
           </View>
         )}
-        
+
         {/* Gas Bill Card */}
         {billAnalysis.gas && (
           <View style={styles.billCard}>
@@ -217,55 +219,55 @@ const Account = () => {
               <Ionicons name="flame-outline" size={24} color="#00b890" />
               <Text style={styles.billCardTitle}>Gas Bill</Text>
             </View>
-            
+
             <View style={styles.billCardContent}>
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Provider:</Text>
                 <Text style={styles.billValue}>{billAnalysis.gas.bill_provider}</Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Period:</Text>
                 <Text style={styles.billValue}>{billAnalysis.gas.billing_period}</Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Consumption:</Text>
                 <Text style={styles.billValue}>
                   {billAnalysis.gas.consumption.value} {billAnalysis.gas.consumption.unit}
                 </Text>
               </View>
-              
+
               <View style={styles.billInfo}>
                 <Text style={styles.billLabel}>Amount:</Text>
                 <Text style={styles.billValue}>
                   {billAnalysis.gas.amount.currency} {billAnalysis.gas.amount.value}
                 </Text>
               </View>
-              
+
               {/* Sustainability Score */}
               <View style={styles.scoreContainer}>
                 <Text style={styles.scoreLabel}>Sustainability Score</Text>
                 <View style={styles.scoreWrapper}>
-                  <View 
+                  <View
                     style={[
-                      styles.scoreIndicator, 
-                      { 
+                      styles.scoreIndicator,
+                      {
                         backgroundColor: getSustainabilityColor(billAnalysis.gas.sustainability_score),
                         width: `${billAnalysis.gas.sustainability_score}%`
                       }
-                    ]} 
+                    ]}
                   />
                 </View>
                 <Text style={styles.scoreValue}>{billAnalysis.gas.sustainability_score}/100</Text>
               </View>
-              
+
               {/* Key Insights */}
               <Text style={styles.insightsTitle}>Key Insights:</Text>
               {billAnalysis.gas.key_insights.map((insight, index) => (
                 <Text key={index} style={styles.insightText}>• {insight}</Text>
               ))}
-              
+
               {/* Recommendations */}
               <Text style={styles.insightsTitle}>Recommendations:</Text>
               {billAnalysis.gas.recommendations.map((rec, index) => (
@@ -291,11 +293,11 @@ const Account = () => {
                 <Ionicons name="close" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-            
+
             <ScrollView style={styles.modalForm}>
               <Text style={styles.formLabel}>Upload Electricity Bill</Text>
-              <TouchableOpacity 
-                style={styles.uploadButton} 
+              <TouchableOpacity
+                style={styles.uploadButton}
                 onPress={() => pickImage(setImage1)}
               >
                 <Ionicons name="image-outline" size={24} color="#fff" />
@@ -303,10 +305,10 @@ const Account = () => {
                   {image1 ? "Bill 1 Selected" : "Select Electricity Bill"}
                 </Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.formLabel}>Upload Gas Bill</Text>
-              <TouchableOpacity 
-                style={styles.uploadButton} 
+              <TouchableOpacity
+                style={styles.uploadButton}
                 onPress={() => pickImage(setImage2)}
               >
                 <Ionicons name="image-outline" size={24} color="#fff" />
@@ -314,7 +316,7 @@ const Account = () => {
                   {image2 ? "Bill 2 Selected" : "Select Gas Bill"}
                 </Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.formLabel}>Family Size</Text>
               <TextInput
                 placeholder="Enter number of family members"
@@ -324,7 +326,7 @@ const Account = () => {
                 keyboardType="numeric"
                 style={styles.input}
               />
-              
+
               <Text style={styles.formLabel}>Region</Text>
               <TextInput
                 placeholder="Enter your region (e.g., Mumbai, Delhi)"
@@ -335,14 +337,13 @@ const Account = () => {
               />
 
               <Text style={styles.formLabel}>Carpet Area</Text>
-                <TextInput
-                  placeholder="Enter carpet area (square feet)"
-                  placeholderTextColor="#8A8D91"
-                  value={region}
-                  style={styles.input}
-                />
-              
-              <TouchableOpacity 
+              <TextInput
+                placeholder="Enter carpet area (square feet)"
+                placeholderTextColor="#8A8D91"
+                style={styles.input}
+              />
+
+              <TouchableOpacity
                 style={styles.submitButton}
                 onPress={uploadData}
                 disabled={!image1 || !image2 || !familySize || !region}
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#0a0f1a",
   },
-  
+
   // Profile Section
   profileSection: {
     backgroundColor: "#131d2a",
@@ -419,7 +420,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginLeft: 10,
   },
-  
+
   // Analyze Button
   analyzeButton: {
     backgroundColor: "#00b890",
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
+
   // Bills Section
   billsSection: {
     padding: 16,
@@ -529,7 +530,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     lineHeight: 20,
   },
-  
+
   // Modal Styles
   modalOverlay: {
     flex: 1,
