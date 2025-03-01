@@ -278,7 +278,7 @@ const Account = () => {
         )}
       </View>
 
-      {/* Bill Analysis Modal */}
+      {/* Bill Analysis Modal - COMPLETELY REDESIGNED */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -295,60 +295,135 @@ const Account = () => {
             </View>
 
             <ScrollView style={styles.modalForm}>
-              <Text style={styles.formLabel}>Upload Electricity Bill</Text>
+              <View style={styles.stepContainer}>
+                <View style={styles.stepIndicator}>
+                  <Text style={styles.stepNumber}>1</Text>
+                </View>
+                <Text style={styles.stepTitle}>Upload Your Bills</Text>
+              </View>
+              
+              <View style={styles.uploadArea}>
+                <View style={styles.uploadCard}>
+                  <TouchableOpacity
+                    style={[styles.uploadButton, image1 && styles.uploadButtonSelected]}
+                    onPress={() => pickImage(setImage1)}
+                  >
+                    {image1 ? (
+                      <>
+                        <Ionicons name="checkmark-circle" size={28} color="#00b890" />
+                        <Text style={styles.uploadStatusText}>Electricity Bill Added</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Ionicons name="flash-outline" size={28} color="#8A8D91" />
+                        <Text style={styles.uploadButtonText}>Electricity Bill</Text>
+                        <View style={styles.uploadIconContainer}>
+                          <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+                        </View>
+                      </>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.uploadButton, image2 && styles.uploadButtonSelected]}
+                    onPress={() => pickImage(setImage2)}
+                  >
+                    {image2 ? (
+                      <>
+                        <Ionicons name="checkmark-circle" size={28} color="#00b890" />
+                        <Text style={styles.uploadStatusText}>Gas Bill Added</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Ionicons name="flame-outline" size={28} color="#8A8D91" />
+                        <Text style={styles.uploadButtonText}>Gas Bill</Text>
+                        <View style={styles.uploadIconContainer}>
+                          <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+                        </View>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.stepContainer}>
+                <View style={styles.stepIndicator}>
+                  <Text style={styles.stepNumber}>2</Text>
+                </View>
+                <Text style={styles.stepTitle}>Add Household Information</Text>
+              </View>
+
+              <View style={styles.formGroupContainer}>
+                <View style={styles.formGroup}>
+                  <View style={styles.inputIcon}>
+                    <Ionicons name="people-outline" size={20} color="#00b890" />
+                  </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Family Size</Text>
+                    <TextInput
+                      placeholder="Enter number of members"
+                      placeholderTextColor="#8A8D91"
+                      value={familySize}
+                      onChangeText={setFamilySize}
+                      keyboardType="numeric"
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <View style={styles.inputIcon}>
+                    <Ionicons name="location-outline" size={20} color="#00b890" />
+                  </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Region</Text>
+                    <TextInput
+                      placeholder="E.g., Mumbai, Delhi"
+                      placeholderTextColor="#8A8D91"
+                      value={region}
+                      onChangeText={setRegion}
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <View style={styles.inputIcon}>
+                    <Ionicons name="home-outline" size={20} color="#00b890" />
+                  </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Carpet Area</Text>
+                    <TextInput
+                      placeholder="Area in square feet"
+                      placeholderTextColor="#8A8D91"
+                      keyboardType="numeric"
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.noteContainer}>
+                <Ionicons name="information-circle-outline" size={20} color="#00b890" />
+                <Text style={styles.noteText}>Your bill data is securely processed and used only to provide personalized insights and recommendations.</Text>
+              </View>
+
               <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={() => pickImage(setImage1)}
-              >
-                <Ionicons name="image-outline" size={24} color="#fff" />
-                <Text style={styles.uploadButtonText}>
-                  {image1 ? "Bill 1 Selected" : "Select Electricity Bill"}
-                </Text>
-              </TouchableOpacity>
-
-              <Text style={styles.formLabel}>Upload Gas Bill</Text>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={() => pickImage(setImage2)}
-              >
-                <Ionicons name="image-outline" size={24} color="#fff" />
-                <Text style={styles.uploadButtonText}>
-                  {image2 ? "Bill 2 Selected" : "Select Gas Bill"}
-                </Text>
-              </TouchableOpacity>
-
-              <Text style={styles.formLabel}>Family Size</Text>
-              <TextInput
-                placeholder="Enter number of family members"
-                placeholderTextColor="#8A8D91"
-                value={familySize}
-                onChangeText={setFamilySize}
-                keyboardType="numeric"
-                style={styles.input}
-              />
-
-              <Text style={styles.formLabel}>Region</Text>
-              <TextInput
-                placeholder="Enter your region (e.g., Mumbai, Delhi)"
-                placeholderTextColor="#8A8D91"
-                value={region}
-                onChangeText={setRegion}
-                style={styles.input}
-              />
-
-              <Text style={styles.formLabel}>Carpet Area</Text>
-              <TextInput
-                placeholder="Enter carpet area (square feet)"
-                placeholderTextColor="#8A8D91"
-                style={styles.input}
-              />
-
-              <TouchableOpacity
-                style={styles.submitButton}
+                style={[
+                  styles.submitButton,
+                  (!image1 || !image2 || !familySize || !region) && styles.submitButtonDisabled
+                ]}
                 onPress={uploadData}
                 disabled={!image1 || !image2 || !familySize || !region}
               >
-                <Text style={styles.submitButtonText}>Analyze Bills</Text>
+                {(!image1 || !image2 || !familySize || !region) ? (
+                  <Text style={styles.submitButtonText}>Complete All Fields</Text>
+                ) : (
+                  <>
+                    <Text style={styles.submitButtonText}>Analyze Bills</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.submitButtonIcon} />
+                  </>
+                )}
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -531,79 +606,173 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Modal Styles
+  // Modal Styles - Completely Redesigned
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: '90%',
-    maxHeight: '80%',
+    maxHeight: '85%',
     backgroundColor: "#131d2a",
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: "#243246",
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: "#192539",
-    padding: 16,
+    padding: 18,
     borderBottomWidth: 1,
     borderBottomColor: "#243246",
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: "#fff",
   },
   modalForm: {
     padding: 16,
   },
-  formLabel: {
-    fontSize: 14,
-    fontWeight: '500',
+  stepContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  stepIndicator: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#00b890",
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  stepNumber: {
     color: "#fff",
-    marginBottom: 8,
-    marginTop: 16,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  stepTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  uploadArea: {
+    marginBottom: 16,
+  },
+  uploadCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   uploadButton: {
     backgroundColor: "#192539",
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
-    flexDirection: 'row',
+    width: '48%',
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: "#243246",
     borderStyle: 'dashed',
   },
+  uploadButtonSelected: {
+    borderColor: "#00b890",
+    borderStyle: 'solid',
+    backgroundColor: 'rgba(0, 184, 144, 0.1)',
+  },
   uploadButtonText: {
-    color: "#fff",
-    marginLeft: 10,
+    color: "#8A8D91",
     fontSize: 14,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  uploadStatusText: {
+    color: "#fff",
+    fontSize: 14,
+    marginTop: 8,
+  },
+  uploadIconContainer: {
+    backgroundColor: "#00b890",
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formGroupContainer: {
+    backgroundColor: "#192539",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  formGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  inputIcon: {
+    width: 40,
+    alignItems: 'center',
+  },
+  inputContainer: {
+    flex: 1,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: "#8A8D91",
+    marginBottom: 4,
   },
   input: {
-    backgroundColor: "#192539",
+    backgroundColor: "#131d2a",
     borderRadius: 8,
-    padding: 16,
+    padding: 12,
     color: "#fff",
     fontSize: 14,
+  },
+  noteContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 184, 144, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 24,
+    alignItems: 'flex-start',
+  },
+  noteText: {
+    color: "#fff",
+    fontSize: 12,
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 18,
   },
   submitButton: {
     backgroundColor: "#00b890",
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginTop: 24,
     marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#192539",
+    borderWidth: 1,
+    borderColor: "#243246",
   },
   submitButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  submitButtonIcon: {
+    marginLeft: 8,
   },
 });
 
