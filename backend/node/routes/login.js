@@ -12,8 +12,14 @@ const {
   getInvestor,
   createMeeting,
   getAllProjects,
-  getInvestorById
+  getInvestorById,
+  analyzeBills
 } = require("../controllers/handleLogin");
+
+const {
+  createUser,
+  findUser
+} = require("../controllers/login");
 
 router.route("/project").post(createProject);
 router.route("/project/:name").get(getProject);
@@ -24,6 +30,12 @@ router.route("/investor/:name").get(getInvestor);
 router.route("/investor/:id").get(getInvestorById);
 router.route("/meeting").post(createMeeting);
 router.route("/allprojects").get(getAllProjects);
+router.route("/analyze-bills").post(analyzeBills);
+router.route("/createuser").post(createUser);
+router.route("/finduser").get(findUser);
+
+
+
 
 
 

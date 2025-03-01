@@ -166,12 +166,12 @@ export default function CommunitySection() {
               <Ionicons name="close" size={28} color="#00b890" />
             </TouchableOpacity>
             <Text className="text-white text-lg font-semibold">
-              {selectedNews?.source}
+              {selectedNews?.source || ''}
             </Text>
             <View style={{ width: 28 }} /> {/* Spacer for alignment */}
           </View>
   
-          {selectedNews && (
+          {selectedNews ? (
             <View style={{ flex: 1 }}>
               {webViewLoading && (
                 <View className="flex-1 justify-center items-center bg-[#0a0f1a]">
@@ -197,7 +197,16 @@ export default function CommunitySection() {
                 style={{ flex: 1, display: webViewLoading || webViewError ? 'none' : 'flex' }}
                 onLoad={handleWebViewLoad}
                 onError={handleWebViewError}
+                renderError={(errorDomain, errorCode, errorDesc) => (
+                  <View className="flex-1 justify-center items-center bg-[#0a0f1a]">
+                    <Text className="text-white">Error loading page: {errorDesc}</Text>
+                  </View>
+                )}
               />
+            </View>
+          ) : (
+            <View className="flex-1 justify-center items-center bg-[#0a0f1a]">
+              <Text className="text-white">No news selected</Text>
             </View>
           )}
         </SafeAreaView>

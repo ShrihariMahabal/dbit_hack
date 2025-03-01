@@ -203,7 +203,7 @@ def scrape_google_news(query, count=5):
 
 @app.route('/news', methods=['GET'])
 def get_news():
-    keyword = request.args.get('keyword', default='renewable energy')
+    keyword = request.args.get('keyword', default='Latest updates on renewable energy, carbon footprint reduction, and sustainable investments in India.')
     count = request.args.get('count', default=5, type=int)
     
     result, status_code = scrape_google_news(keyword, count)
