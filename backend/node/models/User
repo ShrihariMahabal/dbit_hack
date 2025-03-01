@@ -4,6 +4,7 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: [true, "must provide name"] },
   email: { type: String, required: [true, "must provide Email"] },
   password: { type: String, required: true },
+  user_steps: { type: Number, default: 1000 }, // Add user_steps here
   analysisResults: [
     {
       bill_type: String,
