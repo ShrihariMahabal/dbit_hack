@@ -317,7 +317,7 @@ const SustainableEcommercePage = () => {
       onPress={() => {
         console.log(item);
         router.push({
-          pathname: "/(tabs)/account/productdetails",
+          pathname: "/(tabs)/products/productdetails",
           params: { item: JSON.stringify(item) },
         });
       }}
