@@ -7,7 +7,7 @@ export default function TravelLayout() {
                 name="index" 
                 options={{
                
-                    headerTitle: 'Where To?',
+                    headerTitle: 'Greener Products',
                     headerTitleAlign: 'center',
                     headerStyle: {
                         height: 80,
