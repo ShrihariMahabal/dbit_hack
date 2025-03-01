@@ -333,6 +333,14 @@ const Account = () => {
                 onChangeText={setRegion}
                 style={styles.input}
               />
+
+              <Text style={styles.formLabel}>Carpet Area</Text>
+                <TextInput
+                  placeholder="Enter carpet area (square feet)"
+                  placeholderTextColor="#8A8D91"
+                  value={region}
+                  style={styles.input}
+                />
               
               <TouchableOpacity 
                 style={styles.submitButton}
