@@ -37,6 +37,10 @@ const UserSchema = new mongoose.Schema({
         value: Number,
         unit: String,
       },
+      carbon_emissions: {
+        value: Number,
+        unit: String,
+      },
     },
   ],
   invested: {type : Number}
