@@ -70,7 +70,7 @@ const ProjectList = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("http://localhost:5000/login/allprojects");
+        const response = await fetch("http://localhost:8000/login/allprojects");
         if (!response.ok) {
           throw new Error("Failed to fetch projects");
         }
