@@ -269,7 +269,7 @@ const SustainableEcommercePage = () => {
   const handleFaiss = async (object) => {
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5001/query", {
+      const response = await axios.post("https://localhost:8000/query", {
         query: object,
       });
       console.log("FAISS response:", response.data);
