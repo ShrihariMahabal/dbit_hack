@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Calendar } from "react-native-calendars";
@@ -24,6 +25,8 @@ import Svg, { Path, Circle, G, Text as SvgText } from "react-native-svg";
 import { router } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons"; // Import FontAwesome5 for icons
 import Walking from "../../../components/Walking";
+import axios from "axios"; // Import axios for CarbonSavingsPieChart
+
 // Updated color scheme
 const COLORS = {
   background: "#0a0f1a",
@@ -58,12 +61,72 @@ const createPieChartPath = (centerX, centerY, radius, startAngle, endAngle) => {
 
 // Carbon Savings Pie Chart Component
 const CarbonSavingsPieChart = () => {
-  // Carbon savings data
-  const carbonData = [
-    { category: "Transport", percentage: 45, color: "#00b890" },
-    { category: "Shopping", percentage: 30, color: "#2a9d8f" },
-    { category: "Project Funding", percentage: 25, color: "#3a7ca5" },
-  ];
+  const [carbonData, setCarbonData] = useState([]); // State to hold carbon data
+  const userId = "67c328812878b9b80182d205"; // Hardcoded user ID - replace with dynamic user ID
+
+  // Animated value for scaling
+  const scaleValue = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scaleValue.value }],
+    };
+  });
+
+  useEffect(() => {
+    const fetchCarbonFootprint = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/green/getCarbonFootprint` // Corrected URL with userId
+        );
+        const footprint = response.data.carbonFootprint;
+
+        if (footprint) {
+          const totalCarbonFootprint =
+            footprint.travel + footprint.electricity + footprint.gas;
+
+          const processedCarbonData = [
+            {
+              category: "Travel",
+              percentage: (footprint.travel / totalCarbonFootprint) * 100 || 0,
+              color: "#00b890",
+            },
+            {
+              category: "Electricity",
+              percentage:
+                (footprint.electricity / totalCarbonFootprint) * 100 || 0,
+              color: "#2a9d8f",
+            },
+            {
+              category: "LPG Gas",
+              percentage: (footprint.gas / totalCarbonFootprint) * 100 || 0,
+              color: "#3a7ca5",
+            },
+          ];
+          setCarbonData(processedCarbonData);
+        } else {
+          console.error("Carbon footprint data is missing in API response");
+          setCarbonData([
+            // Default data in case of API issue, or handle differently
+            { category: "Travel", percentage: 45, color: "#00b890" },
+            { category: "Electricity", percentage: 30, color: "#2a9d8f" },
+            { category: "LPG Gas", percentage: 25, color: "#3a7ca5" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching carbon footprint data:", error);
+        setCarbonData([
+          // Default data in case of API issue, or handle differently
+          { category: "Travel", percentage: 45, color: "#00b890" },
+          { category: "Electricity", percentage: 30, color: "#2a9d8f" },
+          { category: "LPG Gas", percentage: 25, color: "#3a7ca5" },
+        ]);
+      }
+    };
+
+    fetchCarbonFootprint();
+    // Start animation when component mounts
+    scaleValue.value = withTiming(1, { duration: 500 }); // Animate to scale 1 over 500ms
+  }, []);
 
   const centerX = 150;
   const centerY = 150;
@@ -73,63 +136,65 @@ const CarbonSavingsPieChart = () => {
 
   return (
     <View style={styles.pieChartContainer}>
-      <Text style={styles.pieChartTitle}>Carbon Savings Breakdown</Text>
+      <Text style={styles.pieChartTitle}>Carbon Emission Breakdown</Text>
 
-      <Svg height="300" width="300">
-        <Circle
-          cx={centerX}
-          cy={centerY}
-          r={radius + 5}
-          fill={COLORS.surface}
-        />
+      <Animated.View style={[animatedStyle]}>
+        <Svg height="300" width="300">
+          <Circle
+            cx={centerX}
+            cy={centerY}
+            r={radius + 5}
+            fill={COLORS.surface}
+          />
 
-        {/* Render pie slices */}
-        {carbonData.map((item, index) => {
-          const endAngle = startAngle + (item.percentage / 100) * 360;
-          const pathData = createPieChartPath(
-            centerX,
-            centerY,
-            radius,
-            startAngle,
-            endAngle
-          );
+          {/* Render pie slices */}
+          {carbonData.map((item, index) => {
+            const endAngle = startAngle + (item.percentage / 100) * 360;
+            const pathData = createPieChartPath(
+              centerX,
+              centerY,
+              radius,
+              startAngle,
+              endAngle
+            );
 
-          // Calculate position for the percentage label
-          const midAngle = startAngle + (endAngle - startAngle) / 2;
-          const midRad = ((midAngle - 90) * Math.PI) / 180;
-          const labelRadius = radius * 0.65;
-          const labelX = centerX + labelRadius * Math.cos(midRad);
-          const labelY = centerY + labelRadius * Math.sin(midRad);
+            // Calculate position for the percentage label
+            const midAngle = startAngle + (endAngle - startAngle) / 2;
+            const midRad = ((midAngle - 90) * Math.PI) / 180;
+            const labelRadius = radius * 0.65;
+            const labelX = centerX + labelRadius * Math.cos(midRad);
+            const labelY = centerY + labelRadius * Math.sin(midRad);
 
-          // Save the end angle to use as the start angle for the next slice
-          const currentStartAngle = startAngle;
-          startAngle = endAngle;
+            // Save the end angle to use as the start angle for the next slice
+            const currentStartAngle = startAngle;
+            startAngle = endAngle;
 
-          return (
-            <G key={index}>
-              <Path d={pathData} fill={item.color} />
-              <SvgText
-                x={labelX}
-                y={labelY}
-                fill="#ffffff"
-                fontSize="14"
-                fontWeight="bold"
-                textAnchor="middle"
-              >
-                {`${item.percentage}%`}
-              </SvgText>
-            </G>
-          );
-        })}
+            return (
+              <G key={index}>
+                <Path d={pathData} fill={item.color} />
+                <SvgText
+                  x={labelX}
+                  y={labelY}
+                  fill="#ffffff"
+                  fontSize="14"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  {`${item.percentage.toFixed(1)}%`}
+                </SvgText>
+              </G>
+            );
+          })}
 
-        {/* Center circle for donut effect */}
-        <Circle
-          cx={centerX}
-          cy={centerY}
-          r={radius * 0.4}
-          fill={COLORS.surface}
-        />
-      </Svg>
+          {/* Center circle for donut effect */}
+          <Circle
+            cx={centerX}
+            cy={centerY}
+            r={radius * 0.4}
+            fill={COLORS.surface}
+          />
+        </Svg>
+      </Animated.View>
 
       {/* Legend */}
       <View style={styles.legendContainer}>
@@ -203,9 +268,10 @@ export default function Home() {
               <Text style={styles.welcomeText}>Welcome Back!</Text>
               <Text style={styles.usernameText}>Deep</Text>
             </View>
-            <TouchableHighlight 
-              onPress={() => router.push('(tabs)/home/account')}
-              className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 items-center justify-center">
+            <TouchableHighlight
+              onPress={() => router.push("(tabs)/home/account")}
+              className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 items-center justify-center"
+            >
               <Text className="text-white text-lg font-semibold">IN</Text>
             </TouchableHighlight>
           </View>

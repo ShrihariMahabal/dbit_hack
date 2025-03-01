@@ -286,7 +286,17 @@ import {
     
         console.log("Funding successful:", fundData);
         Alert.alert("Success, Investment of ₹${investmentAmount} successful!");
-    
+        const incrementResponse = await fetch("http://localhost:8000/login/incrementinv", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          console.log("Response status:", incrementResponse.status);
+          if (!incrementResponse.ok) {
+            throw new Error("Failed to increment investment count");
+          }
+
         // Reset modal and input
         setInvestModalVisible(false);
           setInvestmentAmount('');

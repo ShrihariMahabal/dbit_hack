@@ -191,6 +191,63 @@ const getInvestorById = async (req, res) => {
   }
 };
 
+const incrementInvestment = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { invested: 1 } }, // Always increments by 1
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Investment incremented", user: updatedUser });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+const getInvestedProjects = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(user)
+    return res.status(200).json({ investedProjectsCount: user.invested });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+const getSteps = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    // Fetch the user from the database
+    const user = await User.findById(userId);
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the number of steps
+    return res.status(200).json({ stepsCount: user.user_steps });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
 const createMeeting = async (req, res) => {
   try {
     const { founderName, investorNames, title, date, startTime, endTime, keyPoints } = req.body;
@@ -260,12 +317,12 @@ const analyzeBills = async (req, res) => {
     const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
     const model = gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
-    // Construct the updated prompt
+    // Construct the updated prompt for precise carbon_emissions calculation
     const prompt = `
-      Analyze this utility bill image and extract key information.
-      The user has ${userData.family_size} family members in ${userData.region}, India.
+      Analyze this utility bill image for a household in India with ${userData.family_size} members in ${userData.region} and calculate the **precise carbon emissions** associated with the reported consumption, using specific emission factors.
 
-      Return ONLY a valid JSON object with these exact fields:
+      Return ONLY a valid JSON object for each bill, strictly following this format:
+      \`\`\`json
       {
         "bill_type": "electricity|water|gas",
         "bill_provider": "string",
@@ -294,36 +351,54 @@ const analyzeBills = async (req, res) => {
         "estimated_savings_potential": {
           "value": number,
           "unit": "string"
+        },
+        "carbon_emissions": {
+          "value": number,
+          "unit": "kgs"
         }
       }
+      \`\`\`
 
-      Do not include any additional text or explanations. Only return the JSON object.
+      **Instructions for EXACT 'carbon_emissions' calculation:**
 
-      Make sure your assessment is accurate and based on typical usage patterns in India.
-      For electricity bills: Consider 75 kWh/month/person as average in India.
-      For water bills: Consider 4000 liters/month/person as average in India.
-      For gas bills: Consider 1 cylinder/month for a family of 4 as average in India.
+      - **MANDATORY:** You **MUST** calculate and return the 'carbon_emissions' value in kilograms (kgs) for each applicable bill type (electricity and gas). For water bills, return 0.
+      - Perform an **EXACT calculation** of carbon emissions using the consumption from the bill and the following specific emission factors.
 
-      Adjust for seasonal factors appropriately (e.g., higher electricity use in summer is expected).
+      - **Electricity Bills:**
+        1.  **Emission Factor:** Use a carbon intensity of **0.82 kilograms of CO2 per kWh** for electricity in India (based on the average for 2023).
+        2.  **Carbon Emissions Calculation:** 'carbon_emissions' = (Electricity consumption in kWh from the bill) * **0.82 kg CO2/kWh**. Use the consumption value directly from the bill to get the precise emission.
+
+      - **Gas Bills (LPG assumed):**
+        1.  **Emission Factor:** Use a CO2 emission factor of **2.9 kilograms of CO2 per kg of LPG**.
+        2.  **Carbon Emissions Calculation:** 'carbon_emissions' = (Gas consumption in kg of LPG from the bill) * **2.9 kg CO2/kg LPG**. Use the gas consumption value directly from the bill to get the precise emission. If gas consumption unit is not in kg, mention the unit assumed for calculation in 'key_insights'. If gas consumption is not available on the bill, return 0 for carbon_emissions.
+
+      - **Water Bills:** Return 'carbon_emissions': { "value": 0, "unit": "kgs" }.
+
+      **Important Notes:**
+      - Use the specified, precise emission factors for carbon emission calculations.
+      - Ensure 'carbon_emissions' values for Electricity and Gas are based on the reported bill consumption and are calculated exactly as instructed.
+      - Provide units clearly for all values in the JSON.
+      - Do not include any additional text or explanations outside the JSON object.
+      - The 'carbon_emissions' values should be specific and reflect the carbon footprint based on the provided emission factors for 2023 (for electricity) and the LPG emission factor. They should not be estimations or rounded values unless necessary due to limitations in input data.
     `;
 
-    // Function to extract JSON from the response
+    // Function to extract JSON from the response (no change needed)
     const extractJSON = (text) => {
-      const jsonMatch = text.match(/\{[\s\S]*\}/); // Match the first JSON object in the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         return jsonMatch[0];
       }
       throw new Error('No JSON found in the response');
     };
 
-    // Analyze both bills
+    // Analyze both bills (no change needed for this part)
     const analysisResults = await Promise.all(
       imagesBase64.map(async (imageBase64) => {
         // Prepare the image for Gemini API
         const image = {
           inlineData: {
             data: imageBase64,
-            mimeType: 'image/jpeg', // Adjust based on the image type
+            mimeType: 'image/jpeg',
           },
         };
 
@@ -332,12 +407,12 @@ const analyzeBills = async (req, res) => {
         const response = await result.response;
         const text = response.text();
 
-        // Log the raw response for debugging
+        // Log the raw response for debugging (optional, but good to keep for now)
         console.log('Raw Gemini Response:', text);
 
         // Parse the JSON response
         try {
-          const jsonText = extractJSON(text); // Extract JSON from the response
+          const jsonText = extractJSON(text);
           return JSON.parse(jsonText);
         } catch (error) {
           console.error('Failed to parse JSON:', text);
@@ -351,25 +426,34 @@ const analyzeBills = async (req, res) => {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      user.analysisResults.push(...analysisResults); // Append new results to the existing array
-      await user.save(); // Save the updated user document
-      console.log('User document updated successfully');
+
+      let updatedCarbonFootprint = { ...user.carbonFootprint };
+
+      analysisResults.forEach(result => {
+        if (result.bill_type === 'electricity' && result.carbon_emissions && result.carbon_emissions.value) {
+          updatedCarbonFootprint.electricity += result.carbon_emissions.value;
+        } else if (result.bill_type === 'gas' && result.carbon_emissions && result.carbon_emissions.value) {
+          updatedCarbonFootprint.gas += result.carbon_emissions.value;
+        }
+      });
+
+      user.analysisResults.push(...analysisResults);
+      user.carbonFootprint = updatedCarbonFootprint;
+      await user.save();
+      console.log('User document updated successfully with precise carbon footprint emissions'); // Updated log message
     } catch (error) {
       console.error('Error saving user document:', error);
-      return res.status(500).json({ error: 'Failed to save analysis results', details: error.message });
+      return res.status(500).json({ error: 'Failed to save analysis results and update carbon footprint', details: error.message });
     } finally {
       console.log('completed');
     }
 
-
-    // Return the results as an array of objects
+    // Return the results as an array of objects (no change needed)
     res.json(analysisResults);
   } catch (error) {
     console.error('Error analyzing bills:', error);
     res.status(500).json({ error: 'Failed to analyze bills', details: error.message });
   }
-
-
 };
 
 module.exports = {
@@ -382,5 +466,8 @@ module.exports = {
   createMeeting,
   getAllProjects,
   getInvestorById,
-  analyzeBills
+  analyzeBills,
+  incrementInvestment,
+  getInvestedProjects,
+  getSteps
 };

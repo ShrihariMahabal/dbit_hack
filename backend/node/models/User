@@ -4,7 +4,13 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: [true, "must provide name"] },
   email: { type: String, required: [true, "must provide Email"] },
   password: { type: String, required: true },
-  user_steps: { type: Number, default: 1000 }, // Add user_steps here
+  user_steps: { type: Number, default: 1000 },
+  carbonFootprint: {
+    // Modified carbonFootprint field to store an object
+    travel: { type: Number, default: 0 },
+    electricity: { type: Number, default: 0 }, // Corrected spelling to 'electricity'
+    gas: { type: Number, default: 0 },
+  },
   analysisResults: [
     {
       bill_type: String,
@@ -31,8 +37,13 @@ const UserSchema = new mongoose.Schema({
         value: Number,
         unit: String,
       },
+      carbon_emissions: {
+        value: Number,
+        unit: String,
+      },
     },
   ],
+  invested: {type : Number}
 }); //schema for collection
 module.exports = mongoose.model("User", UserSchema); //model is the wrapper for schema
 //mongoose model provides an interface with the mongo db, to perform CRUD
