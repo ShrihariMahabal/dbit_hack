@@ -2,6 +2,16 @@ const Project = require("../models/Project");
 const Investor = require("../models/Investor");
 const Founder = require("../models/Founder");
 const Meeting = require("../models/Meeting");
+const multer = require('multer');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Initialize Gemini API
+const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+
+// Set up Multer for file uploads
+const upload = multer({ dest: 'uploads/' });
+
+
 
 const createProject = async (req, res) => {
   try {
@@ -232,6 +242,135 @@ const createMeeting = async (req, res) => {
 };
 
 
+const analyzeBills = async (req, res) => {
+  try {
+    const { imagesBase64, userData } = req.body;
+
+    // Validate input
+    if (!imagesBase64 || !Array.isArray(imagesBase64) || imagesBase64.length !== 2) {
+      return res.status(400).json({ error: 'Exactly 2 images are required' });
+    }
+
+    if (!userData || !userData.family_size || !userData.region) {
+      return res.status(400).json({ error: 'Family size and region are required' });
+    }
+
+    // Initialize Gemini API
+    const gemini = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
+
+    // Construct the updated prompt
+    const prompt = `
+      Analyze this utility bill image and extract key information.
+      The user has ${userData.family_size} family members in ${userData.region}, India.
+      
+      Return ONLY a valid JSON object with these exact fields:
+      {
+        "bill_type": "electricity|water|gas",
+        "bill_provider": "string",
+        "billing_period": "string",
+        "consumption": {
+          "value": number,
+          "unit": "string",
+          "previous_value": number or null
+        },
+        "amount": {
+          "value": number,
+          "currency": "string"
+        },
+        "consumption_rating": "excellent|good|average|high|excessive",
+        "consumption_per_person": number,
+        "regional_average_per_person": number,
+        "percentage_diff_from_average": number,
+        "seasonal_factor": number between 0.8 and 1.2,
+        "sustainability_score": number between 0 and 100,
+        "key_insights": [
+          "string", "string"
+        ],
+        "recommendations": [
+          "string", "string"
+        ],
+        "estimated_savings_potential": {
+          "value": number,
+          "unit": "string"
+        }
+      }
+      
+      Do not include any additional text or explanations. Only return the JSON object.
+      
+      Make sure your assessment is accurate and based on typical usage patterns in India.
+      For electricity bills: Consider 75 kWh/month/person as average in India.
+      For water bills: Consider 4000 liters/month/person as average in India.
+      For gas bills: Consider 1 cylinder/month for a family of 4 as average in India.
+      
+      Adjust for seasonal factors appropriately (e.g., higher electricity use in summer is expected).
+    `;
+
+    // Function to extract JSON from the response
+    const extractJSON = (text) => {
+      const jsonMatch = text.match(/\{[\s\S]*\}/); // Match the first JSON object in the response
+      if (jsonMatch) {
+        return jsonMatch[0];
+      }
+      throw new Error('No JSON found in the response');
+    };
+
+    // Analyze both bills
+    const analysisResults = await Promise.all(
+      imagesBase64.map(async (imageBase64) => {
+        // Prepare the image for Gemini API
+        const image = {
+          inlineData: {
+            data: imageBase64,
+            mimeType: 'image/jpeg', // Adjust based on the image type
+          },
+        };
+
+        // Generate content
+        const result = await model.generateContent([prompt, image]);
+        const response = await result.response;
+        const text = response.text();
+
+        // Log the raw response for debugging
+        console.log('Raw Gemini Response:', text);
+
+        // Parse the JSON response
+        try {
+          const jsonText = extractJSON(text); // Extract JSON from the response
+          return JSON.parse(jsonText);
+        } catch (error) {
+          console.error('Failed to parse JSON:', text);
+          throw new Error('Failed to parse Gemini response as JSON');
+        }
+      })
+    );
+    
+    // try {
+    //   const user = await User.findById("67c328812878b9b80182d205");
+    //   if (!user) {
+    //     return res.status(404).json({ error: 'User not found' });
+    //   }
+    //   user.analysisResults.push(...analysisResults); // Append new results to the existing array
+    //   await user.save(); // Save the updated user document
+    //   console.log('User document updated successfully');
+    // } catch (error) {
+    //   console.error('Error saving user document:', error);
+    //   return res.status(500).json({ error: 'Failed to save analysis results', details: error.message });
+    // } finally {
+    //   console.log('completed');
+    // }
+    
+
+    // Return the results as an array of objects
+    res.json(analysisResults);
+  } catch (error) {
+    console.error('Error analyzing bills:', error);
+    res.status(500).json({ error: 'Failed to analyze bills', details: error.message });
+  }
+
+
+};
+
 module.exports = {
   createProject,
   getProject,
@@ -241,5 +380,6 @@ module.exports = {
   getInvestor,
   createMeeting,
   getAllProjects,
-  getInvestorById
+  getInvestorById,
+  analyzeBills
 };
