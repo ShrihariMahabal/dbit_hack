@@ -62,7 +62,7 @@ const CaptureImage = ({ setImageUri, onImageUpload }) => {
 
         try {
           const response = await axios.post(
-            "http://localhost:8000/detect_objects",
+            "http://127.0.0.1:5001/detect_objects",
             formData,
             {
               headers: {

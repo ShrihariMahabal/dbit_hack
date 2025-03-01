@@ -269,7 +269,7 @@ const SustainableEcommercePage = () => {
   const handleFaiss = async (object) => {
     setLoading(true);
     try {
-      const response = await axios.post("https://localhost:8000/query", {
+      const response = await axios.post("http://127.0.0.1:5001/query", {
         query: object,
       });
       console.log("FAISS response:", response.data);
@@ -317,7 +317,7 @@ const SustainableEcommercePage = () => {
       onPress={() => {
         console.log(item);
         router.push({
-          pathname: "/(tabs)/account/productdetails",
+          pathname: "/(tabs)/products/productdetails",
           params: { item: JSON.stringify(item) },
         });
       }}
