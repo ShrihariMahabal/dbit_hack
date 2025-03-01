@@ -78,5 +78,27 @@ const updateCarbonFootprint = async (req, res) => {
     });
   }
 };
+const getSteps = async (req, res) => {
+  console.log("getSteps controller called");
+  try {
+    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-module.exports = { updateSteps, updateCarbonFootprint }; // Export both controllers
+    res.status(200).json({
+      steps: user.user_steps, // Return only the user_steps value
+    });
+  } catch (error) {
+    console.error("Error in getSteps controller:", error);
+    if (error.name === "CastError" && error.kind === "ObjectId") {
+      return res.status(400).json({ message: "Invalid User ID format" }); // Handle invalid ObjectId
+    }
+    res
+      .status(500)
+      .json({ message: "Failed to get user steps", error: error.message });
+  }
+};
+
+module.exports = { updateSteps, updateCarbonFootprint, getSteps }; // Export all controllers
