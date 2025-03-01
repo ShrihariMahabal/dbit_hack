@@ -118,6 +118,28 @@ export default function Layout() {
           }}
         />
 
+        <Tabs.Screen
+          name="projects"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <View
+                style={{
+                  backgroundColor:
+                    color === theme.primary
+                      ? theme.primaryTransparent
+                      : "transparent",
+                  borderRadius: 10,
+                  padding: 4, // Reduced padding to 4 from 6
+                }}
+              >
+                <Ionicons name="business-outline" color={color} size={22} />
+              </View>
+            ),
+            tabBarLabel: "Projects",
+            headerShown: false,
+          }}
+        />
+
         {/* Account Tab */}
         <Tabs.Screen
           name="products"
