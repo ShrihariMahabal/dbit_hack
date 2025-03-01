@@ -1,4 +1,5 @@
 const User = require("../models/User");
+
 const createUser = async (req, res) => {
   try {
     const exists = await User.findOne({ email: req.body.email });
@@ -43,8 +44,26 @@ const findUser = async (req, res) => {
   }
 };
 
+const fetchAllUsers = async (req, res) => {
+  try {
+    // Fetch all users from the database
+    const users = await User.find({});
+
+    // Optionally, you can exclude sensitive information like passwords
+    const usersWithoutPasswords = users.map(user => {
+      const { password, ...userWithoutPassword } = user.toObject();
+      return userWithoutPassword;
+    });
+
+    // Return the list of users
+    return res.status(200).json({ users: usersWithoutPasswords });
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    return res.status(500).json({ error: "Failed to fetch users" });
+  }
+};
 
 
 
 
-module.exports = { createUser, findUser };
+module.exports = { createUser, findUser, fetchAllUsers };

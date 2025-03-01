@@ -46,6 +46,8 @@ const Travel = () => {
   const API_KEY = process.env.EXPO_PUBLIC_ola_api; 
   const BASE_URL = "https://api.olamaps.io/places/v1/autocomplete";
 
+  console.log(API_KEY);
+
   // Fetch location suggestions
   const fetchSuggestions = async (input) => {
     try {

@@ -43,7 +43,9 @@ const UserSchema = new mongoose.Schema({
       },
     },
   ],
-  invested: {type: Number}
+  invested: {type: Number},
+  public_trips: {type: Number}
+
 }); //schema for collection
 module.exports = mongoose.model("User", UserSchema); //model is the wrapper for schema
 //mongoose model provides an interface with the mongo db, to perform CRUD

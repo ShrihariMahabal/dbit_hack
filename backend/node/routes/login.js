@@ -21,7 +21,8 @@ const {
 
 const {
   createUser,
-  findUser
+  findUser,
+  fetchAllUsers
 } = require("../controllers/login");
 
 router.route("/project").post(createProject);
@@ -39,6 +40,8 @@ router.route("/finduser").get(findUser);
 router.route("/incrementinv").post(incrementInvestment)
 router.route("/getinvested").get(getInvestedProjects);
 router.route("/getsteps").get(getSteps);
+router.route("/findallusers").get(fetchAllUsers);
+
 
 
 
