@@ -123,7 +123,7 @@ def search():
     try:
         data = request.get_json()
         query = data.get('query', '')
-
+        print(query)
         if not query or not isinstance(query, str):
             return jsonify({"error": "A single query string is required"}), 400
 
