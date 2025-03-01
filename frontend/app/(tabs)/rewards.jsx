@@ -6,7 +6,11 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
-  Image
+  Image,
+  Share,
+  Platform,
+  Linking,
+  Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
@@ -78,6 +82,48 @@ const LeaderboardRow = ({ rank, name, avatar, carbonSaved, isCurrentUser }) => {
   );
 };
 
+// WhatsApp sharing function
+const shareToWhatsApp = (carbonSaved, rank) => {
+  const message = `Hey, I saved ${carbonSaved}kg of carbon and ranked #${rank} on EcoTracker! Join me in making a difference for our planet. 🌱`;
+  
+  // Try to use the Share API first (works on both iOS and Android)
+  Share.share({
+    message: message,
+    title: "My Carbon Savings Achievement"
+  })
+  .then(result => {
+    if (result.action === Share.dismissedAction) {
+      // User dismissed the share sheet
+      console.log("Share dismissed");
+    }
+  })
+  .catch(error => {
+    console.log("Error sharing:", error);
+    
+    // Fallback direct to WhatsApp if Share API fails
+    try {
+      // Encode the message for URL
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
+      
+      Linking.canOpenURL(whatsappUrl)
+        .then(supported => {
+          if (supported) {
+            return Linking.openURL(whatsappUrl);
+          } else {
+            Alert.alert(
+              "WhatsApp not installed",
+              "Please install WhatsApp to share your achievement"
+            );
+          }
+        })
+        .catch(err => console.error("An error occurred", err));
+    } catch (error) {
+      console.error("Error opening WhatsApp:", error);
+    }
+  });
+};
+
 // Main Component
 export default function ChallengesLeaderboard() {
   const [activeTab, setActiveTab] = useState('challenges');
@@ -139,13 +185,20 @@ export default function ChallengesLeaderboard() {
     { id: 9, name: "Thomas R.", rank: 9, carbonSaved: 232.8, avatar: null },
     { id: 10, name: "Olivia L.", rank: 10, carbonSaved: 221.4, avatar: null },
   ];
+
+  // Current user data
+  const currentUser = leaderboard.find(user => user.isCurrentUser) || {
+    name: "Deep",
+    rank: 3,
+    carbonSaved: 314.2
+  };
   
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: COLORS.background }}>
       <StatusBar barStyle="light-content" />
       
       <View className="px-5 py-4 mt-10">
-        <Text className="text-2xl font-pbold text-[#e0e0e0] mb-6">Impact Dashboard</Text>
+        <Text className="text-2xl font-bold text-[#e0e0e0] mb-6">Impact Dashboard</Text>
         
         {/* Tab Switcher */}
         <View className="flex-row bg-[#131d2a] p-1 rounded-full mb-6 border border-white/10">
@@ -303,7 +356,7 @@ export default function ChallengesLeaderboard() {
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <View className="w-12 h-12 rounded-full bg-[#00b890]/20 mr-3 items-center justify-center">
-                    <Text className="text-[#00b890] font-bold text-xl">3</Text>
+                    <Text className="text-[#00b890] font-bold text-xl">{currentUser.rank}</Text>
                   </View>
                   <View>
                     <Text className="text-white font-semibold">Top 5%</Text>
@@ -311,7 +364,12 @@ export default function ChallengesLeaderboard() {
                   </View>
                 </View>
                 
-                <TouchableOpacity className="bg-[#00b890] px-4 py-2 rounded-lg">
+                {/* WhatsApp Share Button */}
+                <TouchableOpacity 
+                  className="bg-[#00b890] px-4 py-2 rounded-lg flex-row items-center"
+                  onPress={() => shareToWhatsApp(currentUser.carbonSaved, currentUser.rank)}
+                >
+                  <FontAwesome5 name="whatsapp" size={16} color="#fff" style={{ marginRight: 6 }} />
                   <Text className="text-white font-medium">Share</Text>
                 </TouchableOpacity>
               </View>
