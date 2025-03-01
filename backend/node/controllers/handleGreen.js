@@ -1,6 +1,7 @@
 const User = require("../models/User");
 
 const updateSteps = async (req, res) => {
+  console.log("updateSteps controller called");
   // Corrected function name to be more descriptive - updateSteps (lowercase s) is conventional for function names
   try {
     const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
@@ -34,4 +35,48 @@ const updateSteps = async (req, res) => {
   }
 };
 
-module.exports = {updateSteps}; // Export the function directly as updateSteps
+const updateCarbonFootprint = async (req, res) => {
+  console.log("updateCarbonFootprint controller called");
+  try {
+    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const { travel, electricity, gas } = req.body; // Extract carbon footprint components from request body
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Conditionally update carbon footprint fields if they are provided in the request body
+    if (travel !== undefined) {
+      user.carbonFootprint.travel = Number(travel); // Ensure it's a number
+    }
+    if (electricity !== undefined) {
+      user.carbonFootprint.electricity = Number(electricity); // Ensure it's a number
+    }
+    if (gas !== undefined) {
+      user.carbonFootprint.gas = Number(gas); // Ensure it's a number
+    }
+
+    await user.save(); // Save the updated user document
+
+    res.status(200).json({
+      message: "Carbon footprint updated successfully",
+      user: {
+        userId: user._id, // Optionally return relevant user data
+        carbonFootprint: user.carbonFootprint, // Return the updated carbon footprint object
+        name: user.name, // Add more user details if needed
+      },
+    });
+  } catch (error) {
+    console.error("Error in updateCarbonFootprint controller:", error);
+    if (error.name === "CastError" && error.kind === "ObjectId") {
+      return res.status(400).json({ message: "Invalid User ID format" }); // Handle invalid ObjectId
+    }
+    res.status(500).json({
+      message: "Failed to update carbon footprint",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { updateSteps, updateCarbonFootprint }; // Export both controllers

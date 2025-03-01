@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { updateSteps } = require("../controllers/handleGreen");
+const {
+  updateSteps,
+  updateCarbonFootprint,
+} = require("../controllers/handleGreen");
 router.route("/updateSteps").post(updateSteps);
+router.route("/updateCarbonFootprint").post(updateCarbonFootprint);
 module.exports = router;
