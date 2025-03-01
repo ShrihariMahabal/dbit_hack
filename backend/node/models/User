@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema({
       },
     },
   ],
-  invested: {type : Number},
+  invested: {type: Number},
   public_trips : {type : Number},
 }); //schema for collection
 
