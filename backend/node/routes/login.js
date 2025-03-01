@@ -13,7 +13,10 @@ const {
   createMeeting,
   getAllProjects,
   getInvestorById,
-  analyzeBills
+  analyzeBills,
+  incrementInvestment,
+  getInvestedProjects,
+  getSteps
 } = require("../controllers/handleLogin");
 
 const {
@@ -33,7 +36,9 @@ router.route("/allprojects").get(getAllProjects);
 router.route("/analyze-bills").post(analyzeBills);
 router.route("/createuser").post(createUser);
 router.route("/finduser").get(findUser);
-
+router.route("/incrementinv").post(incrementInvestment)
+router.route("/getinvested").get(getInvestedProjects);
+router.route("/getsteps").get(getSteps);
 
 
 

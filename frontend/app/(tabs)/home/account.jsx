@@ -338,7 +338,6 @@ const Account = () => {
                 <TextInput
                   placeholder="Enter carpet area (square feet)"
                   placeholderTextColor="#8A8D91"
-                  value={region}
                   style={styles.input}
                 />
               
