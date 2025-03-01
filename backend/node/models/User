@@ -5,9 +5,15 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: [true, "must provide Email"] },
   password: { type: String, required: true },
 
+  steps_completed: { type: Number, default: 0 }, // Added steps_completed field
+
   stats: [
     {
-      bill_type: { type: String, enum: ["electricity", "water", "gas"], required: true },
+      bill_type: {
+        type: String,
+        enum: ["electricity", "water", "gas"],
+        required: true,
+      },
       bill_provider: { type: String, required: true },
       billing_period: { type: String, required: true },
 
@@ -18,7 +24,11 @@ const UserSchema = new mongoose.Schema({
       amount_value: { type: Number, required: true },
       amount_currency: { type: String, required: true },
 
-      consumption_rating: { type: String, enum: ["excellent", "good", "average", "high", "excessive"], required: true },
+      consumption_rating: {
+        type: String,
+        enum: ["excellent", "good", "average", "high", "excessive"],
+        required: true,
+      },
       consumption_per_person: { type: Number, required: true },
       regional_average_per_person: { type: Number, required: true },
       percentage_diff_from_average: { type: Number, required: true },
@@ -29,9 +39,9 @@ const UserSchema = new mongoose.Schema({
       recommendations: { type: [String], required: true },
 
       estimated_savings_potential_value: { type: Number, required: true },
-      estimated_savings_potential_unit: { type: String, required: true }
-    }
-  ]
+      estimated_savings_potential_unit: { type: String, required: true },
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", UserSchema);
