@@ -1,10 +1,8 @@
-// App.js
-import React from 'react';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
-import { WebView } from 'react-native-webview';
+import React from "react";
+import { StyleSheet, View, Text, SafeAreaView } from "react-native";
+import { WebView } from "react-native-webview";
 
 export default function App() {
-  // HTML content with Three.js - all code included inline to avoid loading issues
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -49,9 +47,7 @@ export default function App() {
     <body>
       <div class="loading" id="loading">Loading Earth...</div>
       <div class="info" id="info">
-        • Pinch or scroll to zoom<br>
-        • Drag to rotate<br>
-        • Two fingers to pan
+        • Drag to rotate
       </div>
       
       <script>
@@ -83,13 +79,73 @@ export default function App() {
           
           // Camera setup
           const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-          camera.position.z = 3;
           
           // Renderer setup
           const renderer = new THREE.WebGLRenderer({ antialias: true });
           renderer.setSize(window.innerWidth, window.innerHeight);
           renderer.setPixelRatio(window.devicePixelRatio);
+          renderer.toneMappingExposure = 1.2;
           document.body.appendChild(renderer.domElement);
+          
+          // India coordinates (approximate)
+          // Longitude: ~78°E (78 degrees east)
+          // Latitude: ~21°N (21 degrees north)
+          // Convert to radians for initial rotation
+          const indiaLongitude = 78 * (Math.PI/180);
+          const indiaLatitude = 21 * (Math.PI/180);
+          
+          // Earth geometry
+          const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
+          
+          // Earth material with custom appearance
+          const earthMaterial = new THREE.MeshPhongMaterial({
+            shininess: 0,
+          });
+          
+          // Create and add Earth mesh to scene
+          const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+          // Rotate Earth to show India
+          earthMesh.rotation.y = -indiaLongitude; // Negative because we're rotating the earth, not the camera
+          scene.add(earthMesh);
+          
+          // Add ambient light
+          const ambientLight = new THREE.AmbientLight(0xffffff, 0);
+          scene.add(ambientLight);
+          
+          // Add directional light (sunlight)
+          const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+          sunLight.position.set(5, 3, 5);
+          scene.add(sunLight);
+          
+          // Add a subtle blue atmospheric glow
+          const glowGeometry = new THREE.SphereGeometry(1.02, 32, 32);
+          const glowMaterial = new THREE.MeshPhongMaterial({
+            color: 0x0033ff,
+            transparent: true,
+            opacity: 0.1,
+            shininess: 0
+          });
+          
+          const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+          scene.add(glowMesh);
+          
+          // Create very subtle cloud layer
+          const cloudGeometry = new THREE.SphereGeometry(1.015, 32, 32);
+          const cloudMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.2
+          });
+          
+          const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+          cloudMesh.rotation.y = -indiaLongitude; // Match earth rotation
+          scene.add(cloudMesh);
+          
+          // Position camera to focus on India (accounting for India's latitude)
+          camera.position.x = Math.cos(indiaLatitude) * 3;
+          camera.position.y = Math.sin(indiaLatitude) * 3;
+          camera.position.z = 0.5;
+          camera.lookAt(0, 0, 0);
           
           // Add OrbitControls - with fallback if not loaded properly
           let controls;
@@ -98,102 +154,69 @@ export default function App() {
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.rotateSpeed = 0.5;
-            controls.minDistance = 1.5;  // Minimum zoom distance
+            controls.minDistance = 5;  // Minimum zoom distance
             controls.maxDistance = 10;   // Maximum zoom distance
-            controls.enablePan = true;
+            controls.enableZoom = false; // Disable zoom
+            controls.enablePan = false;  // Disable pan
+            controls.target.set(0, 0, 0);
+            controls.update();
           } catch (e) {
             console.error('OrbitControls not available:', e);
             document.getElementById('info').textContent = 'Interactive controls not available';
-            // Create basic auto-rotation instead
-            controls = null;
+            // We already set the camera position above
           }
           
-          // Earth geometry
-          const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
-          
-          // Earth material (simple version initially)
-          const earthMaterial = new THREE.MeshPhongMaterial({
-            color: 0x2233ff,
-            shininess: 5
-          });
-          
-          // Create and add Earth mesh to scene (temporary blue sphere)
-          const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
-          scene.add(earthMesh);
-          
-          // Add ambient light
-          const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-          scene.add(ambientLight);
-          
-          // Add directional light (sunlight)
-          const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-          sunLight.position.set(5, 3, 5);
-          scene.add(sunLight);
-          
-          // Create cloud layer
-          const cloudGeometry = new THREE.SphereGeometry(1.02, 32, 32);
-          const cloudMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.1
-          });
-          
-          const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
-          scene.add(cloudMesh);
-          
-          // Earth texture loading with fallback
+          // Use a high-quality earth texture
           const textureLoader = new THREE.TextureLoader();
-          textureLoader.load(
-            'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg',
-            function(texture) {
-              // Apply texture to Earth
-              earthMaterial.map = texture;
-              earthMaterial.needsUpdate = true;
-              
-              // Hide loading text
-              document.getElementById('loading').style.display = 'none';
-              
-              // Try to load cloud texture
-              textureLoader.load(
-                'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.jpg',
-                function(cloudTexture) {
-                  cloudMaterial.map = cloudTexture;
-                  cloudMaterial.opacity = 0.4;
-                  cloudMaterial.needsUpdate = true;
-                }
-              );
-            },
-            null,
-            function(error) {
-              console.error('Error loading texture', error);
-              document.getElementById('loading').textContent = 'Using basic Earth (texture failed to load)';
+          
+          // Earth textures in priority order
+          const textureURLs = [
+            'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_4k.jpg',
+            'https://eoimages.gsfc.nasa.gov/images/imagerecords/74000/74117/world.topo.200407.3x5400x2700.jpg',
+            'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'
+          ];
+          
+          // Try loading textures in order until one works
+          function tryLoadTexture(index) {
+            if (index >= textureURLs.length) {
+              document.getElementById('loading').textContent = 'Using basic Earth (textures failed to load)';
               setTimeout(() => {
                 document.getElementById('loading').style.display = 'none';
               }, 2000);
+              return;
             }
-          );
-          
-          // Add background stars
-          const starGeometry = new THREE.BufferGeometry();
-          const starCount = 1000;
-          
-          const positions = new Float32Array(starCount * 3);
-          
-          for (let i = 0; i < starCount * 3; i += 3) {
-            positions[i] = (Math.random() - 0.5) * 100;
-            positions[i + 1] = (Math.random() - 0.5) * 100;
-            positions[i + 2] = (Math.random() - 0.5) * 100;
+            
+            textureLoader.load(
+              textureURLs[index],
+              function(texture) {
+                // Apply texture to Earth
+                earthMaterial.map = texture;
+                earthMaterial.needsUpdate = true;
+                
+                // Hide loading text
+                document.getElementById('loading').style.display = 'none';
+                
+                // Try to load cloud texture
+                textureLoader.load(
+                  'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.jpg',
+                  function(cloudTexture) {
+                    cloudMaterial.map = cloudTexture;
+                    cloudMaterial.opacity = 0.15; // Very subtle clouds
+                    cloudMaterial.needsUpdate = true;
+                  }
+                );
+              },
+              undefined,
+              function(error) {
+                console.error('Error loading texture', error);
+                // Try the next texture in the list
+                tryLoadTexture(index + 1);
+              }
+            );
           }
           
-          starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-          
-          const starMaterial = new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 0.1
-          });
-          
-          const stars = new THREE.Points(starGeometry, starMaterial);
-          scene.add(stars);
+          // Start trying to load textures
+          tryLoadTexture(0);
           
           // Handle window resize
           window.addEventListener('resize', function() {
@@ -217,17 +240,17 @@ export default function App() {
           function animate() {
             requestAnimationFrame(animate);
             
+            // Rotate the Earth
+            earthMesh.rotation.y += 0.001; // Adjust rotation speed here
+            
+            // Rotate clouds slightly differently for effect
+            if (cloudMesh) {
+              cloudMesh.rotation.y += 0.0012; // Slightly faster than Earth
+            }
+            
             // If OrbitControls is available, update it
             if (controls) {
               controls.update();
-            } else {
-              // Otherwise do simple auto-rotation
-              earthMesh.rotation.y += 0.005;
-            }
-            
-            // Rotate clouds
-            if (cloudMesh) {
-              cloudMesh.rotation.y += 0.0008;
             }
             
             renderer.render(scene, camera);
@@ -245,14 +268,14 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <WebView
         style={styles.webview}
-        originWhitelist={['*']}
+        originWhitelist={["*"]}
         source={{ html: htmlContent }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
-          console.error('WebView error: ', nativeEvent);
+          console.error("WebView error: ", nativeEvent);
         }}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
@@ -267,23 +290,23 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   webview: {
     flex: 1,
   },
   loadingContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
   },
   loadingText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
 });
