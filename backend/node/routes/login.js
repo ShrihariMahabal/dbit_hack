@@ -16,7 +16,9 @@ const {
   analyzeBills,
   incrementInvestment,
   getInvestedProjects,
-  getSteps
+  getSteps,
+  getTrips,
+  incrementTrips
 } = require("../controllers/handleLogin");
 
 const {
@@ -37,8 +39,10 @@ router.route("/analyze-bills").post(analyzeBills);
 router.route("/createuser").post(createUser);
 router.route("/finduser").get(findUser);
 router.route("/incrementinv").post(incrementInvestment)
+router.route("/incrementtrips").post(incrementTrips)
 router.route("/getinvested").get(getInvestedProjects);
 router.route("/getsteps").get(getSteps);
+router.route("/gettrips").get(getTrips);
 
 
 
