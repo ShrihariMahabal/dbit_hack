@@ -106,12 +106,13 @@ const ProjectList = () => {
     return (
       <View className="h-1 bg-white/10 rounded overflow-hidden">
         <View 
-          className={`h-full bg-[${theme.primary}] rounded`}
-          style={{ width: `${progress * 100}%` }}
+          className="h-full rounded"
+          style={{ width: `${progress}%`, backgroundColor: theme.primary }}
         />
       </View>
     );
   };
+  
 
   return (
     <ScrollView
@@ -138,7 +139,7 @@ const ProjectList = () => {
       </View>
 
       {projects.map((project) => {
-        const progress = project.raisedAmount / project.fundingGoal;
+        const progress = (project.raisedAmount / project.fundingGoal) * 100;
         return (
           <TouchableOpacity
             key={project._id}
@@ -147,7 +148,7 @@ const ProjectList = () => {
             onPress={() => {
               
               router.push({
-                pathname: "/(tabs)/travel/projectdetails",
+                pathname: "/(tabs)/projects/projectdetails",
                 params: { name: project.name },
               });
             }}
@@ -285,7 +286,7 @@ const ProjectList = () => {
                 }}
                 onPress={() => {
                   router.push({
-                    pathname: "/(tabs)/travel/projectdetails",
+                    pathname: "/(tabs)/projects/projectdetails",
                     params: { name: project.name },
                   });
                 }}
