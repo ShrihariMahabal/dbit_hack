@@ -191,6 +191,63 @@ const getInvestorById = async (req, res) => {
   }
 };
 
+const incrementInvestment = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { invested: 1 } }, // Always increments by 1
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Investment incremented", user: updatedUser });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+const getInvestedProjects = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(user)
+    return res.status(200).json({ investedProjectsCount: user.invested });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+const getSteps = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    // Fetch the user from the database
+    const user = await User.findById(userId);
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the number of steps
+    return res.status(200).json({ stepsCount: user.user_steps });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
 const createMeeting = async (req, res) => {
   try {
     const { founderName, investorNames, title, date, startTime, endTime, keyPoints } = req.body;
@@ -409,5 +466,8 @@ module.exports = {
   createMeeting,
   getAllProjects,
   getInvestorById,
-  analyzeBills
+  analyzeBills,
+  incrementInvestment,
+  getInvestedProjects,
+  getSteps
 };

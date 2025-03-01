@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef , useEffect} from 'react';
 import {
   View,
   Text,
@@ -646,9 +646,7 @@ export default function ChallengesLeaderboard() {
   const [selectedTree, setSelectedTree] = useState(null);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const webViewRef = useRef(null);
-
-  // Sample challenges data
-  const challenges = [
+  const [challenges, setChallenges] = useState([
     {
       id: 1,
       title: "Public Transport Trips",
@@ -668,8 +666,8 @@ export default function ChallengesLeaderboard() {
     {
       id: 3,
       title: "Renewable Energy Projects",
-      progress: 2,
-      total: 3,
+      progress: 0, // This will be updated with real data
+      total: 5,
       icon: <MaterialCommunityIcons name="solar-power" size={24} color={COLORS.tertiary} />,
       color: COLORS.tertiary
     },
@@ -689,7 +687,44 @@ export default function ChallengesLeaderboard() {
       icon: <FontAwesome5 name="walking" size={20} color="#3b82f6" />,
       color: "#3b82f6"
     },
-  ];
+  ]);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch the number of invested projects from the backend
+  useEffect(() => {
+    const fetchInvestedProjectsCount = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const investedResponse = await fetch('http://localhost:8000/login/getinvested');
+        const investedData = await investedResponse.json();
+        const investedProjectsCount = investedData.investedProjectsCount;
+
+        const stepsResponse = await fetch('http://localhost:8000/login/getsteps');
+        const stepsData = await stepsResponse.json();
+        const stepsCount = stepsData.stepsCount;
+        // Update the "Renewable Energy Projects" challenge with the real data
+        setChallenges(prevChallenges =>
+          prevChallenges.map(challenge => {
+            if (challenge.id === 3) {
+              return { ...challenge, progress: investedProjectsCount }; // Update Renewable Energy Projects
+            } else if (challenge.id === 5) {
+              return { ...challenge, progress: stepsCount }; // Update Daily Steps
+            } else {
+              return challenge;
+            }
+          })
+        );
+      } catch (error) {
+        console.error("Failed to fetch invested projects count:", error);
+        // Optionally, you can set an error state here
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInvestedProjectsCount();
+  }, []);
 
   // Sample leaderboard data
   const leaderboard = [

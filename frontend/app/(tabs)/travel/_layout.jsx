@@ -6,16 +6,18 @@ export default function TravelLayout() {
             <Stack.Screen 
                 name="index" 
                 options={{
-                    headerShown: false,
-                    headerTitle: 'Where To?',
+                    headerTitle: 'Explore',
                     headerTitleAlign: 'center',
                     headerStyle: {
                         height: 80,
+                        backgroundColor: '#0a0f1a',
                     },
                     headerTitleStyle: {
                         fontSize: 18,
                         fontWeight: 'bold',
+                        color: 'white',
                     },
+                    headerTintColor: 'white',
                 }} 
             />
             <Stack.Screen 
@@ -25,11 +27,65 @@ export default function TravelLayout() {
                     headerTitleAlign: 'center',
                     headerStyle: {
                         height: 80,
+                        backgroundColor: '#0a0f1a',
                     },
                     headerTitleStyle: {
                         fontSize: 18,
                         fontWeight: 'bold',
+                        color: 'white',
                     },
+                    headerTintColor: 'white',
+                }} 
+            />
+            <Stack.Screen 
+                name="mapscreen" 
+                options={{
+                    headerTitle: 'Your Route',
+                    headerTitleAlign: 'center',
+                    headerStyle: {
+                        height: 80,
+                        backgroundColor: '#0a0f1a',
+                    },
+                    headerTitleStyle: {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: 'white',
+                    },
+                    headerTintColor: 'white',
+                }} 
+            />
+            <Stack.Screen 
+                name="booking" 
+                options={{
+                    headerTitle: 'Booking Summary',
+                    headerTitleAlign: 'center',
+                    headerStyle: {
+                        height: 80,
+                        backgroundColor: '#0a0f1a',
+                    },
+                    headerTitleStyle: {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: 'white',
+                    },
+                    headerTintColor: 'white',
+                }} 
+            />
+            <Stack.Screen 
+                name="tickets" 
+                options={{
+                    headerTitle: 'Tickets',
+                    headerTitleAlign: 'center',
+                    headerStyle: {
+                        height: 80,
+                        backgroundColor: '#0a0f1a',
+                    },
+                    headerTitleStyle: {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: 'white',
+                    },
+                    headerTintColor: 'white',
                 }} 
             />
         </Stack>
