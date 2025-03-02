@@ -38,39 +38,57 @@ const BookingPage = () => {
         }
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         const upiID = "deeppatel223204@okicici";
         const payeeName = "Deep Patel";
         const transactionRef = `TXN_${Date.now()}`;
         const transactionNote = "Booking Payment";
         const sendingAmt = bookingAmount || "0.00";
-
+      
         const paymentUrl = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${sendingAmt}&cu=INR&tn=${transactionNote}&tr=${transactionRef}`;
-
-        Linking.canOpenURL(paymentUrl)
-            .then((supported) => {
-                if (!supported) {
-                    Alert.alert(
-                        "Error",
-                        "No UPI apps installed on your device. Please install one and try again."
-                    );
-                } else {
-                    return Linking.openURL(paymentUrl);
-                }
-            })
-            .then(() => {
-                setTimeout(() => {
-                    router.push({
-                        pathname: "/(tabs)/travel/tickets",
-                        params: { legz: JSON.stringify(legs) }
-                    });
-                    // router.replace("/(tabs)/travel/index");
-                }, 500);
-            })
-            .catch((err) => {
-                Alert.alert("Error", "Failed to initiate UPI payment.");
+      
+        try {
+          // Check if UPI apps are installed
+          const supported = await Linking.canOpenURL(paymentUrl);
+          if (!supported) {
+            Alert.alert(
+              "Error",
+              "No UPI apps installed on your device. Please install one and try again."
+            );
+            return;
+          }
+      
+          // Open UPI payment URL
+          await Linking.openURL(paymentUrl);
+      
+          // Increment trips count after successful payment initiation
+          const incrementResponse = await fetch('http://localhost:8000/login/incrementtrips', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: "67c328812878b9b80182d205" }), // Hardcoded user ID
+          });
+      
+          if (!incrementResponse.ok) {
+            throw new Error("Failed to increment trips");
+          }
+      
+          const incrementData = await incrementResponse.json();
+          console.log("Trips incremented:", incrementData);
+      
+          // Redirect to tickets page after a short delay
+          setTimeout(() => {
+            router.push({
+              pathname: "/(tabs)/travel/tickets",
+              params: { legz: JSON.stringify(legs) }
             });
-    };
+          }, 500);
+        } catch (err) {
+          console.error("Payment or increment failed:", err);
+          Alert.alert("Error", "Failed to complete payment or update trips.");
+        }
+      };
 
     const renderLegCard = (leg, index) => (
         <View

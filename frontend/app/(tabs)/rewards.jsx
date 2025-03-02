@@ -1,4 +1,4 @@
-import React, { useState, useRef , useEffect} from 'react';
+import React, { useState, useRef , useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   Linking,
   Alert,
   Modal,
-  Dimensions
+  Dimensions,
+  RefreshControl
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
@@ -649,27 +650,27 @@ export default function ChallengesLeaderboard() {
   const [challenges, setChallenges] = useState([
     {
       id: 1,
-      title: "Public Transport Trips",
-      progress: 3,
-      total: 5,
-      icon: <MaterialCommunityIcons name="bus" size={24} color={COLORS.primary} />,
-      color: COLORS.primary
-    },
-    {
-      id: 2,
-      title: "Eco-friendly Products",
-      progress: 4,
-      total: 10,
-      icon: <MaterialCommunityIcons name="shopping-outline" size={24} color={COLORS.secondary} />,
-      color: COLORS.secondary
-    },
-    {
-      id: 3,
       title: "Renewable Energy Projects",
       progress: 0, // This will be updated with real data
       total: 5,
       icon: <MaterialCommunityIcons name="solar-power" size={24} color={COLORS.tertiary} />,
       color: COLORS.tertiary
+    },
+    {
+      id: 2,
+      title: "Daily Steps",
+      progress: 7500,
+      total: 10000,
+      icon: <FontAwesome5 name="walking" size={20} color="#3b82f6" />,
+      color: "#3b82f6"
+    },
+    {
+      id: 3,
+      title: "Public Transport Trips",
+      progress: 3,
+      total: 5,
+      icon: <MaterialCommunityIcons name="bus" size={24} color={COLORS.primary} />,
+      color: COLORS.primary
     },
     {
       id: 4,
@@ -681,50 +682,70 @@ export default function ChallengesLeaderboard() {
     },
     {
       id: 5,
-      title: "Daily Steps",
-      progress: 7500,
-      total: 10000,
-      icon: <FontAwesome5 name="walking" size={20} color="#3b82f6" />,
-      color: "#3b82f6"
+      title: "Eco-friendly Products",
+      progress: 4,
+      total: 10,
+      icon: <MaterialCommunityIcons name="shopping-outline" size={24} color={COLORS.secondary} />,
+      color: COLORS.secondary
     },
   ]);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch the number of invested projects from the backend
-  useEffect(() => {
-    const fetchInvestedProjectsCount = async () => {
-      try {
-        // Replace with your actual API endpoint
-        const investedResponse = await fetch('http://localhost:8000/login/getinvested');
-        const investedData = await investedResponse.json();
-        const investedProjectsCount = investedData.investedProjectsCount;
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setRefreshing(true);
 
-        const stepsResponse = await fetch('http://localhost:8000/login/getsteps');
-        const stepsData = await stepsResponse.json();
-        const stepsCount = stepsData.stepsCount;
-        // Update the "Renewable Energy Projects" challenge with the real data
-        setChallenges(prevChallenges =>
-          prevChallenges.map(challenge => {
-            if (challenge.id === 3) {
-              return { ...challenge, progress: investedProjectsCount }; // Update Renewable Energy Projects
-            } else if (challenge.id === 5) {
-              return { ...challenge, progress: stepsCount }; // Update Daily Steps
-            } else {
-              return challenge;
-            }
-          })
-        );
-      } catch (error) {
-        console.error("Failed to fetch invested projects count:", error);
-        // Optionally, you can set an error state here
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      // Fetch invested projects count
+      const investedResponse = await fetch('http://localhost:8000/login/getinvested');
+      const investedData = await investedResponse.json();
+      const investedProjectsCount = investedData.investedProjectsCount;
 
-    fetchInvestedProjectsCount();
+      // Fetch steps count
+      const stepsResponse = await fetch('http://localhost:8000/login/getsteps');
+      const stepsData = await stepsResponse.json();
+      const stepsCount = stepsData.stepsCount;
+
+      const tripsResponse = await fetch('http://localhost:8000/login/gettrips');
+      const tripsData = await tripsResponse.json();
+      const tripsCount = tripsData.public_trips;
+
+      // Update the challenges array with real data
+      setChallenges(prevChallenges =>
+        prevChallenges.map(challenge => {
+          if (challenge.id === 1) {
+            return { ...challenge, progress: investedProjectsCount }; // Update Renewable Energy Projects
+          } else if (challenge.id === 2) {
+            return { ...challenge, progress: stepsCount }; // Update Daily Steps
+            
+          } else if (challenge.id === 3) {
+            return { ...challenge, progress: tripsCount };
+          }
+          else {
+            return challenge;
+          }
+        })
+      );
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Handle refresh
+  const onRefresh = () => {
+    fetchData();
+  };
 
   // Sample leaderboard data
   const leaderboard = [
@@ -848,12 +869,22 @@ export default function ChallengesLeaderboard() {
 
       {/* Challenges Tab Content */}
       {activeTab === 'challenges' && (
-        <ScrollView className="flex-1 px-5">
+          <ScrollView
+          className="flex-1 px-5"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[COLORS.primary]}
+              tintColor={COLORS.primary}
+            />
+          }
+        >
           <View className="mb-4">
             <View className="flex-row items-center justify-between mb-3">
               <Text className="text-[#e0e0e0] text-lg font-semibold">Your Active Challenges</Text>
-              <TouchableOpacity>
-                <Text className="text-[#00b890]">See All</Text>
+              <TouchableOpacity onPress={onRefresh}>
+                <Text className="text-[#00b890]">Reload</Text>
               </TouchableOpacity>
             </View>
 

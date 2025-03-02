@@ -212,6 +212,27 @@ const incrementInvestment = async (req, res) => {
   }
 };
 
+const incrementTrips = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { public_trips: 1 } }, // Always increments by 1
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Investment incremented", user: updatedUser });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
 const getInvestedProjects = async (req, res) => {
   try {
     const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
@@ -243,6 +264,26 @@ const getSteps = async (req, res) => {
 
     // Return the number of steps
     return res.status(200).json({ stepsCount: user.user_steps });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+const getTrips = async (req, res) => {
+  try {
+    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+
+    // Fetch the user from the database
+    const user = await User.findById(userId);
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the number of steps
+    return res.status(200).json({ public_trips : user.public_trips });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message || "Internal Server Error" });
@@ -469,5 +510,7 @@ module.exports = {
   analyzeBills,
   incrementInvestment,
   getInvestedProjects,
-  getSteps
+  getSteps,
+  getTrips,
+  incrementTrips
 };
