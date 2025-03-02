@@ -4,7 +4,7 @@ const updateSteps = async (req, res) => {
   console.log("updateSteps controller called");
   // Corrected function name to be more descriptive - updateSteps (lowercase s) is conventional for function names
   try {
-    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const userId = "67c3cf1766f888d598955e90"; // Get userId from route parameters
     const stepsToAdd = parseInt(req.body.stepsToAdd); // Get stepsToAdd from request body, parse to integer
     const parsedStepsToAdd = isNaN(stepsToAdd) ? 1 : stepsToAdd; // Default to 1 if not a valid number
 
@@ -38,7 +38,7 @@ const updateSteps = async (req, res) => {
 const updateCarbonFootprint = async (req, res) => {
   console.log("updateCarbonFootprint controller called");
   try {
-    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const userId = "67c3cf1766f888d598955e90"; // Get userId from route parameters
     const { travel, electricity, gas } = req.body; // Extract carbon footprint components from request body
 
     const user = await User.findById(userId);
@@ -81,7 +81,7 @@ const updateCarbonFootprint = async (req, res) => {
 const getSteps = async (req, res) => {
   console.log("getSteps controller called");
   try {
-    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const userId = "67c3cf1766f888d598955e90"; // Get userId from route parameters
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -104,7 +104,7 @@ const getSteps = async (req, res) => {
 const getCarbonFootprint = async (req, res) => {
   console.log("getCarbonFootprint controller called");
   try {
-    const userId = "67c328812878b9b80182d205"; // Get userId from route parameters
+    const userId = "67c3cf1766f888d598955e90"; // Get userId from route parameters
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });

@@ -85,7 +85,7 @@ const Walking = ({ title, iconColor }) => {
   const progressPercentage = (stepCount / 10000) * 100; // Example total steps as 10000
   const color = iconColor || "#3b82f6";
   const stepsSinceLastCall = useRef(0); // Counter for steps since last API call
-  const userId = "67c328812878b9b80182d205"; // Hardcoded user ID - consider making this dynamic
+  const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID - consider making this dynamic
 
   useEffect(() => {
     let subscription;

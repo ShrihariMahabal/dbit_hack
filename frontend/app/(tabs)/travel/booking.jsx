@@ -67,7 +67,7 @@ const BookingPage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userId: "67c328812878b9b80182d205" }), // Hardcoded user ID
+            body: JSON.stringify({ userId: "67c3cf1766f888d598955e90" }), // Hardcoded user ID
           });
       
           if (!incrementResponse.ok) {

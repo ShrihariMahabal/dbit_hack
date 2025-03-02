@@ -62,7 +62,7 @@ const createPieChartPath = (centerX, centerY, radius, startAngle, endAngle) => {
 // Carbon Savings Pie Chart Component
 const CarbonSavingsPieChart = () => {
   const [carbonData, setCarbonData] = useState([]); // State to hold carbon data
-  const userId = "67c328812878b9b80182d205"; // Hardcoded user ID - replace with dynamic user ID
+  const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID - replace with dynamic user ID
 
   // Animated value for scaling
   const scaleValue = useSharedValue(0);

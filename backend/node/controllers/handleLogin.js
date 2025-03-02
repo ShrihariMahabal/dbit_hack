@@ -193,7 +193,7 @@ const getInvestorById = async (req, res) => {
 
 const incrementInvestment = async (req, res) => {
   try {
-    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+    const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -214,7 +214,7 @@ const incrementInvestment = async (req, res) => {
 
 const incrementTrips = async (req, res) => {
   try {
-    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+    const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -235,7 +235,7 @@ const incrementTrips = async (req, res) => {
 
 const getInvestedProjects = async (req, res) => {
   try {
-    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+    const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID
 
     const user = await User.findById(userId);
 
@@ -252,7 +252,7 @@ const getInvestedProjects = async (req, res) => {
 
 const getSteps = async (req, res) => {
   try {
-    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+    const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID
 
     // Fetch the user from the database
     const user = await User.findById(userId);
@@ -272,7 +272,7 @@ const getSteps = async (req, res) => {
 
 const getTrips = async (req, res) => {
   try {
-    const userId = "67c328812878b9b80182d205"; // Hardcoded user ID
+    const userId = "67c3cf1766f888d598955e90"; // Hardcoded user ID
 
     // Fetch the user from the database
     const user = await User.findById(userId);
@@ -463,7 +463,7 @@ const analyzeBills = async (req, res) => {
     );
 
     try {
-      const user = await User.findById("67c328812878b9b80182d205");
+      const user = await User.findById("67c3cf1766f888d598955e90");
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
