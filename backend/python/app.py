@@ -12,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from dotenv import load_dotenv
+import pdfplumber
 
 load_dotenv()
 
@@ -208,6 +209,56 @@ def get_news():
     
     result, status_code = scrape_google_news(keyword, count)
     return jsonify(result), status_code
+
+@app.route('/verify', methods=['POST'])
+def verify():
+    """Verify the uploaded PDF against a reference PDF using Gemini AI."""
+    try:
+        # Check if the request contains a PDF file
+        if 'pdf' not in request.files:
+            return jsonify({"error": "No PDF file uploaded"}), 400
+
+        # Save the uploaded PDF
+        uploaded_pdf = request.files['pdf']
+        uploaded_pdf_path = "uploaded.pdf"
+        uploaded_pdf.save(uploaded_pdf_path)
+
+        # Extract text from the uploaded PDF
+        uploaded_text = ""
+        with pdfplumber.open(uploaded_pdf_path) as pdf:
+            for page in pdf.pages:
+                uploaded_text += page.extract_text() or ""
+
+        # Extract text from the reference PDF
+        reference_text = ""
+        with pdfplumber.open("reference.pdf") as pdf:
+            for page in pdf.pages:
+                reference_text += page.extract_text() or ""
+        print(uploaded_text)
+        print(reference_text)
+        # Send both texts to Gemini for comparison
+        prompt = f"""
+        Compare the following two solar project reports and determine if the uploaded document is legitimate or not.
+
+        **Reference Document (Correct)**:
+        {reference_text}
+
+        **Uploaded Document**:
+        {uploaded_text}
+
+        Analyze the attached PDF document and determine whether it is a legitimate solar project proposal or a fraudulent one. Examine the document based on the following verification parameters: technical feasibility, financial viability, regulatory compliance, energy generation estimates, and project transparency. Provide a final verdict as 'LEGITIMATE' or 'NOT LEGITIMATE' without any extra text.
+        """
+
+        response = model.generate_content(prompt)
+        verdict = response.text.strip().upper()
+
+        # Clean up uploaded PDF
+        os.remove(uploaded_pdf_path)
+        print(verdict)
+        return jsonify({"verdict": verdict})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
