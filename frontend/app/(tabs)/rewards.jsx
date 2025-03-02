@@ -67,7 +67,6 @@ const LeaderboardRow = ({ rank, name, avatar, carbonSaved, isCurrentUser }) => {
   return (
     <View className={`flex-row items-center p-4 ${isCurrentUser ? 'bg-[#00b890]/10 rounded-xl' : ''}`}>
       <Text className="text-[#e0e0e0] font-bold text-lg w-8">{rank}</Text>
-
       <View className="w-10 h-10 rounded-full bg-gray-700 mr-3 items-center justify-center overflow-hidden">
         {avatar ? (
           <Image source={{ uri: avatar }} className="w-full h-full" />
@@ -75,11 +74,9 @@ const LeaderboardRow = ({ rank, name, avatar, carbonSaved, isCurrentUser }) => {
           <Text className="text-white font-bold">{name.charAt(0)}</Text>
         )}
       </View>
-
       <Text className="text-[#e0e0e0] flex-1 font-medium">{name}</Text>
-
       <View className="flex-row items-center">
-        <MaterialCommunityIcons name="leaf" size={16} color={COLORS.primary} />
+        <MaterialCommunityIcons name="leaf" size={16} color="#00b890" />
         <Text className="text-[#e0e0e0] ml-1 font-bold">{carbonSaved} kg</Text>
       </View>
     </View>
@@ -692,6 +689,7 @@ export default function ChallengesLeaderboard() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState([]);
 
   // Fetch the number of invested projects from the backend
   const fetchData = useCallback(async () => {
@@ -712,6 +710,20 @@ export default function ChallengesLeaderboard() {
       const tripsResponse = await fetch('http://localhost:8000/login/gettrips');
       const tripsData = await tripsResponse.json();
       const tripsCount = tripsData.public_trips;
+
+      const userResponse = await fetch('http://localhost:8000/login/findallusers');
+      if (!userResponse.ok) {
+        throw new Error(`HTTP error! Status: ${userResponse.status}`);
+      }
+      const userData = await userResponse.json();
+
+      const sortedUsers = userData.users.sort((a, b) => {
+      const totalA = a.carbonFootprint.electricity + a.carbonFootprint.gas;
+      const totalB = b.carbonFootprint.electricity + b.carbonFootprint.gas;
+      return totalA - totalB; // Sort in increasing order
+      });
+
+      setLeaderboardData(sortedUsers);
 
       // Update the challenges array with real data
       setChallenges(prevChallenges =>
@@ -746,6 +758,10 @@ export default function ChallengesLeaderboard() {
   const onRefresh = () => {
     fetchData();
   };
+
+  useEffect(() => {
+    console.log("Leaderboard Data Updated:", leaderboardData);
+  }, [leaderboardData]);
 
   // Sample leaderboard data
   const leaderboard = [
@@ -801,12 +817,16 @@ export default function ChallengesLeaderboard() {
   ];
 
 
-  // Current user data
-  const currentUser = leaderboard.find(user => user.isCurrentUser) || {
-    name: "Deep",
+  // Current user data (for demonstration purposes)
+  const currentUser = leaderboardData.find(user => user.email === "john.doe@example.com") || {
+    name: "John Doe",
     rank: 3,
-    carbonSaved: 314.2
+    carbonFootprint: { electricity: 121.7, gas: 72.428 },
   };
+
+  // Calculate rank for the current user
+  const currentUserRank = leaderboardData.findIndex(user => user.email === "john.doe@example.com") + 1;
+
 
   // Calculate number of completed challenges
   const completedChallenges = challenges.filter(challenge =>
@@ -944,83 +964,88 @@ export default function ChallengesLeaderboard() {
       {activeTab === 'leaderboard' && (
         <ScrollView className="flex-1">
           <View className="px-5 mb-4">
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-[#e0e0e0] text-lg font-semibold">Top Carbon Savers</Text>
-              <TouchableOpacity>
-                <Text className="text-[#00b890]">Monthly</Text>
-              </TouchableOpacity>
-            </View>
+  <View className="flex-row items-center justify-between mb-3">
+    <Text className="text-[#e0e0e0] text-lg font-semibold">Top Carbon Savers</Text>
+    <TouchableOpacity>
+      <Text className="text-[#00b890]">Monthly</Text>
+    </TouchableOpacity>
+  </View>
 
-            {/* Top 3 Users */}
-            <View className="flex-row justify-around py-6 mb-4">
-              {/* 2nd Place */}
-              <View className="items-center">
-                <View className="w-16 h-16 rounded-full bg-[#131d2a] border-2 border-[#C0C0C0] items-center justify-center">
-                  <Text className="text-white font-bold text-lg">{leaderboard[1].name.charAt(0)}</Text>
-                </View>
-                <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
-                  <Text className="text-[#C0C0C0] text-xs font-medium">2nd Place</Text>
-                  <Text className="text-white font-bold">{leaderboard[1].carbonSaved} kg</Text>
-                </View>
-              </View>
+  {/* Top 3 Users */}
+  <View className="flex-row justify-around py-6 mb-4">
+    {/* 2nd Place */}
+    <View className="items-center">
+      <View className="w-16 h-16 rounded-full bg-[#131d2a] border-2 border-[#C0C0C0] items-center justify-center">
+        <Text className="text-white font-bold text-lg">{leaderboardData[1]?.name.charAt(0)}</Text>
+      </View>
+      <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
+        <Text className="text-[#C0C0C0] text-xs font-medium">2nd Place</Text>
+        <Text className="text-white font-bold">
+          {(leaderboardData[1]?.carbonFootprint.electricity + leaderboardData[1]?.carbonFootprint.gas).toFixed(2)} kg
+        </Text>
+      </View>
+    </View>
 
-              {/* 1st Place */}
-              <View className="items-center mb-4">
-                <View className="w-20 h-20 rounded-full bg-[#131d2a] border-2 border-[#FFD700] items-center justify-center">
-                  <Text className="text-white font-bold text-xl">{leaderboard[0].name.charAt(0)}</Text>
-                </View>
-                <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
-                  <Text className="text-[#FFD700] text-xs font-medium">1st Place</Text>
-                  <Text className="text-white font-bold">{leaderboard[0].carbonSaved} kg</Text>
-                </View>
-              </View>
+    {/* 1st Place */}
+    <View className="items-center">
+      <View className="w-20 h-20 rounded-full bg-[#131d2a] border-2 border-[#FFD700] items-center justify-center">
+        <Text className="text-white font-bold text-xl">{leaderboardData[0]?.name.charAt(0)}</Text>
+      </View>
+      <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
+        <Text className="text-[#FFD700] text-xs font-medium">1st Place</Text>
+        <Text className="text-white font-bold">
+          {(leaderboardData[0]?.carbonFootprint.electricity + leaderboardData[0]?.carbonFootprint.gas).toFixed(2)} kg
+        </Text>
+      </View>
+    </View>
 
-              {/* 3rd Place */}
-              <View className="items-center">
-                <View className="w-16 h-16 rounded-full bg-[#131d2a] border-2 border-[#CD7F32] items-center justify-center">
-                  <Text className="text-white font-bold text-lg">{leaderboard[2].name.charAt(0)}</Text>
-                </View>
-                <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
-                  <Text className="text-[#CD7F32] text-xs font-medium">3rd Place</Text>
-                  <Text className="text-white font-bold">{leaderboard[2].carbonSaved} kg</Text>
-                </View>
-              </View>
-            </View>
+    {/* 3rd Place */}
+    <View className="items-center">
+      <View className="w-16 h-16 rounded-full bg-[#131d2a] border-2 border-[#CD7F32] items-center justify-center">
+        <Text className="text-white font-bold text-lg">{leaderboardData[2]?.name.charAt(0)}</Text>
+      </View>
+      <View className="items-center mt-2 bg-[#131d2a] px-3 py-1 rounded-lg">
+        <Text className="text-[#CD7F32] text-xs font-medium">3rd Place</Text>
+        <Text className="text-white font-bold">
+          {(leaderboardData[2]?.carbonFootprint.electricity + leaderboardData[2]?.carbonFootprint.gas).toFixed(2)} kg
+        </Text>
+      </View>
+    </View>
+  </View>
 
-            {/* Leaderboard List */}
-            <View className="bg-[#131d2a] rounded-2xl overflow-hidden border border-white/10">
-              <View className="py-3 px-4 bg-black/20 flex-row">
-                <Text className="text-white/60 font-medium w-8">#</Text>
-                <Text className="text-white/60 font-medium flex-1">User</Text>
-                <Text className="text-white/60 font-medium">Carbon Saved</Text>
-              </View>
+  {/* Leaderboard List */}
+  <View className="bg-[#131d2a] rounded-2xl overflow-hidden border border-white/10">
+    <View className="py-3 px-4 bg-black/20 flex-row">
+      <Text className="text-white/60 font-medium w-8">#</Text>
+      <Text className="text-white/60 font-medium flex-1">User</Text>
+      <Text className="text-white/60 font-medium">Carbon Saved</Text>
+    </View>
 
-              {leaderboard.map(user => (
-                <LeaderboardRow
-                  key={user.id}
-                  rank={user.rank}
-                  name={user.name}
-                  avatar={user.avatar}
-                  carbonSaved={user.carbonSaved}
-                  isCurrentUser={user.isCurrentUser}
-                />
-              ))}
-            </View>
+    {leaderboardData.map((user, index) => (
+      <LeaderboardRow
+        key={user._id}
+        rank={index + 1}
+        name={user.name}
+        avatar={null} // Add avatar URL if available
+        carbonSaved={(user.carbonFootprint.electricity + user.carbonFootprint.gas).toFixed(2)}
+        isCurrentUser={user.email === "john.doe@example.com"} // Replace with current user email
+      />
+    ))}
+  </View>
 
-            {/* Your Ranking Card */}
-            <View className="bg-[#131d2a] p-4 rounded-2xl mt-6 border border-white/10">
-              <Text className="text-white/60 font-medium mb-3">Your Position</Text>
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <View className="w-12 h-12 rounded-full bg-[#00b890]/20 mr-3 items-center justify-center">
-                    <Text className="text-[#00b890] font-bold text-xl">{currentUser.rank}</Text>
-                  </View>
-                  <View>
-                    <Text className="text-white font-semibold">Top 5%</Text>
-                    <Text className="text-white/60 text-sm">of all users</Text>
-                  </View>
-                </View>
-
+  {/* Your Ranking Card */}
+  <View className="bg-[#131d2a] p-4 rounded-2xl mt-6 border border-white/10">
+    <Text className="text-white/60 font-medium mb-3">Your Position</Text>
+    <View className="flex-row items-center justify-between">
+      <View className="flex-row items-center">
+        <View className="w-12 h-12 rounded-full bg-[#00b890]/20 mr-3 items-center justify-center">
+          <Text className="text-[#00b890] font-bold text-xl">{currentUserRank}</Text>
+        </View>
+        <View>
+          <Text className="text-white font-semibold">Top 5%</Text>
+          <Text className="text-white/60 text-sm">of all users</Text>
+        </View>
+      </View>
                 {/* WhatsApp Share Button */}
                 <TouchableOpacity
                   className="bg-[#00b890] px-4 py-2 rounded-lg flex-row items-center"
