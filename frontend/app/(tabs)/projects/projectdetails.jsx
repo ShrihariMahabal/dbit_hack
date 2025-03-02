@@ -213,30 +213,6 @@ const ProjectDetails = () => {
     }
 
     try {
-      // Step 2: Send funding request
-      const fundResponse = await fetch("http://localhost:8000/project/fund", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          projName: project.name,
-
-          fundAmt: parseFloat(investmentAmount),
-        }),
-      });
-
-      const fundData = await fundResponse.json();
-
-      if (!fundResponse.ok) {
-        throw new Error(fundData.error || "Funding failed");
-      }
-
-      console.log("Funding successful:", fundData);
-      Alert.alert("Success", `Investment of ₹${investmentAmount} successful!`);
-
-      // Reset modal and input
-
       const options = {
         description: "Sample Payment",
         image: "https://your-company-logo.png",
@@ -262,6 +238,31 @@ const ProjectDetails = () => {
         .catch((error) => {
           Alert.alert("Payment Failed", error.description);
         });
+
+      // Step 2: Send funding request
+      const fundResponse = await fetch("http://localhost:8000/project/fund", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projName: project.name,
+
+          fundAmt: parseFloat(investmentAmount),
+        }),
+      });
+
+      const fundData = await fundResponse.json();
+
+      if (!fundResponse.ok) {
+        throw new Error(fundData.error || "Funding failed");
+      }
+
+      console.log("Funding successful:", fundData);
+      Alert.alert("Success", `Investment of ₹${investmentAmount} successful!`);
+
+      // Reset modal and input
+
       setInvestModalVisible(false);
       setInvestmentAmount("");
     } catch (error) {
