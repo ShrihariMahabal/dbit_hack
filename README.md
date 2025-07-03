@@ -1,4 +1,4 @@
-# EcoImpact - Sustainable Living Platform
+# Secure sustainable living and crowdfunding platform
 
 ## APP DEMO VIDEO
  <!-- Replace with your actual video link -->
